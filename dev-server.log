@@ -1,0 +1,15 @@
+
+> pa-encuestas-y-votaciones@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.67.68:3000
+- Environments: .env.local
+✓ Ready in 869ms
+✓ Running next.config.ts took 74ms
+
+ GET /encuestas 200 in 2.4s (next.js: 982ms, application-code: 1406ms)
+ GET /encuestas 200 in 30ms (next.js: 13ms, application-code: 18ms)
+ GET /encuestas 200 in 51ms (next.js: 11ms, application-code: 40ms)
+ GET /encuestas 200 in 107ms (next.js: 9ms, application-code: 98ms)
