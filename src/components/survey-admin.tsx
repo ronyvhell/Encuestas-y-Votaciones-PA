@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { RocketIcon, Trash2Icon, Undo2Icon } from "lucide-react"
+import { RocketIcon, Share2Icon, Trash2Icon, Undo2Icon } from "lucide-react"
 
 export function SurveyAdmin({
   encuestaId,
@@ -79,14 +79,21 @@ export function SurveyAdmin({
     }
   }
 
+  async function compartir() {
+    const url = `${window.location.origin}/encuestas/${encuestaId}`
+    try {
+      await navigator.clipboard.writeText(url)
+      sileo.success({
+        title: "Enlace copiado",
+        description: "Cualquiera puede responder sin iniciar sesión.",
+      })
+    } catch {
+      sileo.error({ title: "No se pudo copiar el enlace" })
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {publicada ? (
-        <Badge variant="default">Publicada</Badge>
-      ) : (
-        <Badge variant="secondary">Borrador</Badge>
-      )}
-
       <Button size="sm" variant={publicada ? "outline" : "default"} onClick={cambiarEstado} disabled={cambiando}>
         {publicada ? (
           <>
@@ -100,6 +107,13 @@ export function SurveyAdmin({
           </>
         )}
       </Button>
+
+      {publicada && (
+        <Button size="sm" variant="outline" onClick={compartir}>
+          <Share2Icon data-icon="inline-start" />
+          Compartir
+        </Button>
+      )}
 
       <AlertDialog>
         <AlertDialogTrigger
@@ -125,6 +139,13 @@ export function SurveyAdmin({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Badge
+        variant={publicada ? "default" : "secondary"}
+        className="ml-auto h-7 gap-1 px-3 text-sm"
+      >
+        {publicada ? "Publicada" : "Borrador"}
+      </Badge>
     </div>
   )
 }

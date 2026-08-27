@@ -8,7 +8,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      {session?.user && <AppSidebar />}
       <div className="flex min-h-svh w-full flex-1 flex-col">
         <AppHeader
           user={

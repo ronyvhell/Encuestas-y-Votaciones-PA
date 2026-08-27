@@ -7,29 +7,26 @@ import { sileo } from "sileo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { CoverImage } from "@/components/cover-image"
 import { SurveyRender } from "@/components/survey-render"
 import { PreviewPanel } from "@/components/preview-panel"
 import {
   TIPOS_PREGUNTA,
+  colorBadge,
   esTipoConOpciones,
 } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 import type { EncuestaUI, RespuestasUI, TipoUI } from "@/lib/types"
 import {
   CheckIcon,
   EyeIcon,
-  FileTextIcon,
-  ListChecksIcon,
   PlusIcon,
   SaveIcon,
-  TagsIcon,
   Trash2Icon,
   XIcon,
 } from "lucide-react"
@@ -39,8 +36,6 @@ type PreguntaForm = {
   texto: string
   tipoPregunta: string
   opciones: string[]
-  min: string
-  max: string
   requerida: boolean
 }
 
@@ -50,15 +45,97 @@ function nuevaKey() {
   return `p-${Date.now()}-${contadorLocal}`
 }
 
-const itemsTipoPregunta = [
-  { label: "Selecciona un tipo de pregunta", value: null },
-  ...TIPOS_PREGUNTA.map((t) => ({ label: t.label, value: t.value })),
-]
+function Seccion({
+  numero,
+  titulo,
+  descripcion,
+  children,
+}: {
+  numero: number
+  titulo: string
+  descripcion: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+          {numero}
+        </span>
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-heading text-lg font-semibold tracking-tight">{titulo}</h2>
+          <p className="text-sm text-muted-foreground">{descripcion}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function BadgeTipoSeleccionado({
+  nombre,
+  color,
+  onRemove,
+}: {
+  nombre: string
+  color: string
+  onRemove: () => void
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-6 w-fit items-center gap-1 rounded-full border pl-2.5 pr-1 text-xs font-medium",
+        color
+      )}
+    >
+      {nombre}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded-full p-0.5 transition-colors hover:bg-foreground/10"
+        aria-label={`Quitar ${nombre}`}
+      >
+        <XIcon className="size-3" />
+      </button>
+    </span>
+  )
+}
+
+function TipoPreguntaPills({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (tipo: string) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {TIPOS_PREGUNTA.map((tipo, i) => {
+        const activo = value === tipo.value
+        return (
+          <button
+            key={tipo.value}
+            type="button"
+            onClick={() => onChange(activo ? "" : tipo.value)}
+            aria-pressed={activo}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+              activo
+                ? colorBadge(i)
+                : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {tipo.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 export function CreateSurveyForm() {
   const router = useRouter()
 
-  const [tab, setTab] = useState("informacion")
   const [titulo, setTitulo] = useState("")
   const [descripcion, setDescripcion] = useState("")
   const [imagenPortada, setImagenPortada] = useState("")
@@ -94,6 +171,14 @@ export function CreateSurveyForm() {
     return tiposDisponibles.filter((t) => t.nombre.toLowerCase().includes(termino))
   }, [tiposDisponibles, busquedaTipos])
 
+  const tiposSeleccionadosDatos = useMemo(
+    () =>
+      tiposSeleccionados
+        .map((id) => tiposDisponibles.find((t) => t._id === id))
+        .filter((t): t is TipoUI => !!t),
+    [tiposSeleccionados, tiposDisponibles]
+  )
+
   function actualizarPregunta(key: string, cambios: Partial<PreguntaForm>) {
     setPreguntas((prev) => prev.map((p) => (p.key === key ? { ...p, ...cambios } : p)))
   }
@@ -101,7 +186,7 @@ export function CreateSurveyForm() {
   function agregarPregunta() {
     setPreguntas((prev) => [
       ...prev,
-      { key: nuevaKey(), texto: "", tipoPregunta: "", opciones: ["", ""], min: "", max: "", requerida: false },
+      { key: nuevaKey(), texto: "", tipoPregunta: "", opciones: ["", ""], requerida: false },
     ])
   }
 
@@ -231,10 +316,6 @@ export function CreateSurveyForm() {
             texto: p.texto.trim(),
             tipoPregunta: p.tipoPregunta,
             opciones: p.opciones.map((o) => o.trim()).filter((o) => o.length > 0),
-            config: {
-              min: p.min.trim() !== "" ? Number(p.min) : null,
-              max: p.max.trim() !== "" ? Number(p.max) : null,
-            },
             requerida: p.requerida,
           })),
         }),
@@ -310,9 +391,7 @@ export function CreateSurveyForm() {
     descripcion,
     imagenPortada,
     estado: "borrador",
-    tipos: tiposSeleccionados
-      .map((id) => tiposDisponibles.find((t) => t._id === id))
-      .filter((t): t is TipoUI => !!t),
+    tipos: tiposSeleccionadosDatos,
     preguntas: preguntas
       .filter((p) => p.texto.trim())
       .map((p) => ({
@@ -320,384 +399,332 @@ export function CreateSurveyForm() {
         texto: p.texto.trim(),
         tipoPregunta: p.tipoPregunta,
         opciones: p.opciones.map((o) => o.trim()).filter((o) => o.length > 0),
-        config: {
-          min: p.min.trim() !== "" ? Number(p.min) : null,
-          max: p.max.trim() !== "" ? Number(p.max) : null,
-        },
+        config: { min: null, max: null },
         requerida: p.requerida,
       })),
     votos: 0,
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <div className="flex flex-col gap-1">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Crear encuesta</h1>
         <p className="text-sm text-muted-foreground">
-          Completa los pasos para armar tu encuesta.
+          Completa las secciones para armar tu encuesta.
         </p>
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v ?? "informacion")}>
-        <TabsList className="w-full">
-          <TabsTrigger value="informacion" className="flex-1">
-            <FileTextIcon data-icon="inline-start" />
-            Información
-          </TabsTrigger>
-          <TabsTrigger value="tipos" className="flex-1">
-            <TagsIcon data-icon="inline-start" />
-            Tipo de encuesta
-          </TabsTrigger>
-          <TabsTrigger value="preguntas" className="flex-1">
-            <ListChecksIcon data-icon="inline-start" />
-            Preguntas
-          </TabsTrigger>
-        </TabsList>
-
-        {tab === "informacion" && (
-          <FieldGroup className="mt-6">
-            <Field>
-              <FieldLabel htmlFor="titulo">Título de la encuesta</FieldLabel>
-              <Input
-                id="titulo"
-                placeholder="Ej. ¿Cómo calificas nuestra atención?"
-                maxLength={120}
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="descripcion">Descripción breve</FieldLabel>
-              <Textarea
-                id="descripcion"
-                placeholder="Cuéntale a las personas de qué trata la encuesta..."
-                maxLength={500}
-                rows={3}
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="portada-url">Imagen de portada</FieldLabel>
-              <FieldDescription>
-                Puedes subir una imagen o pegar la URL de una.
-              </FieldDescription>
-              <FieldGroup>
-                <InputGroup>
-                  <InputGroupInput
-                    id="portada-url"
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                    value={imagenPortada.startsWith("http") ? imagenPortada : ""}
-                    onChange={(e) => setImagenPortada(e.target.value.trim())}
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <label className="cursor-pointer">
-                      <Input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/gif"
-                        className="sr-only"
-                        onChange={(e) => subirImagen(e.target.files?.[0])}
-                        disabled={subiendoImagen}
-                      />
-                      <InputGroupButton variant="outline" size="xs">
-                        {subiendoImagen ? "Subiendo..." : "Subir"}
-                      </InputGroupButton>
-                    </label>
-                  </InputGroupAddon>
-                </InputGroup>
-
-                {imagenPortada && (
-                  <div className="relative w-fit">
-                    <CoverImage
-                      src={imagenPortada}
-                      alt="Vista previa de la portada"
-                      className="h-32 w-52 rounded-2xl object-cover"
+      <Seccion
+        numero={1}
+        titulo="Información"
+        descripcion="Los datos generales de la encuesta."
+      >
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="titulo">Título de la encuesta</FieldLabel>
+            <Input
+              id="titulo"
+              placeholder="Ej. ¿Cómo calificas nuestra atención?"
+              maxLength={120}
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="descripcion">Descripción breve</FieldLabel>
+            <Textarea
+              id="descripcion"
+              placeholder="Cuéntale a las personas de qué trata la encuesta..."
+              maxLength={500}
+              rows={3}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="portada-url">Imagen de portada</FieldLabel>
+            <FieldDescription>
+              Puedes subir una imagen o pegar la URL de una.
+            </FieldDescription>
+            <FieldGroup>
+              <InputGroup>
+                <InputGroupInput
+                  id="portada-url"
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                  value={imagenPortada.startsWith("http") ? imagenPortada : ""}
+                  onChange={(e) => setImagenPortada(e.target.value.trim())}
+                />
+                <InputGroupAddon align="inline-end">
+                  <label className="cursor-pointer">
+                    <Input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="sr-only"
+                      onChange={(e) => subirImagen(e.target.files?.[0])}
+                      disabled={subiendoImagen}
                     />
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="absolute -top-2 -right-2 rounded-full bg-secondary"
-                      onClick={() => setImagenPortada("")}
-                      aria-label="Quitar imagen de portada"
-                    >
-                      <XIcon />
-                    </Button>
-                  </div>
-                )}
-              </FieldGroup>
-            </Field>
-          </FieldGroup>
-        )}
+                    <InputGroupButton variant="outline" size="xs">
+                      {subiendoImagen ? "Subiendo..." : "Subir"}
+                    </InputGroupButton>
+                  </label>
+                </InputGroupAddon>
+              </InputGroup>
 
-        {tab === "tipos" && (
-          <div className="mt-6 flex flex-col gap-4">
-            <Field>
-              <FieldLabel htmlFor="buscar-tipos">Tipo de encuesta</FieldLabel>
-              <FieldDescription>
-                Selecciona uno o varios tipos. Si no encuentras el tuyo, créalo con el botón +.
-              </FieldDescription>
-            </Field>
-
-            <InputGroup>
-              <InputGroupInput
-                id="buscar-tipos"
-                placeholder="Buscar tipo de encuesta..."
-                value={busquedaTipos}
-                onChange={(e) => setBusquedaTipos(e.target.value)}
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  variant="outline"
-                  size="icon-sm"
-                  onClick={() => setCreandoTipo(true)}
-                  aria-label="Crear tipo de encuesta"
-                >
-                  <PlusIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-
-            {creandoTipo && (
-              <div className="flex flex-col gap-3 rounded-2xl border p-4">
-                <Field>
-                  <FieldLabel htmlFor="nuevo-tipo">Nombre del nuevo tipo</FieldLabel>
-                  <Input
-                    id="nuevo-tipo"
-                    autoFocus
-                    placeholder="Ej. Clima laboral"
-                    maxLength={40}
-                    value={nombreTipoNuevo}
-                    onChange={(e) => setNombreTipoNuevo(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        guardarTipo()
-                      }
-                    }}
+              {imagenPortada && (
+                <div className="relative w-fit">
+                  <CoverImage
+                    src={imagenPortada}
+                    alt="Vista previa de la portada"
+                    className="h-32 w-52 rounded-2xl object-cover"
                   />
-                  {nombreTipoNuevo.trim().length > 0 && nombreTipoNuevo.trim().length < 2 && (
-                    <FieldError>Mínimo 2 caracteres.</FieldError>
-                  )}
-                </Field>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={guardarTipo} disabled={guardandoTipo}>
-                    <CheckIcon data-icon="inline-start" />
-                    {guardandoTipo ? "Guardando..." : "Guardar tipo"}
-                  </Button>
                   <Button
-                    size="sm"
                     variant="ghost"
-                    onClick={() => {
-                      setCreandoTipo(false)
-                      setNombreTipoNuevo("")
-                    }}
+                    size="icon-sm"
+                    className="absolute -top-2 -right-2 rounded-full bg-secondary"
+                    onClick={() => setImagenPortada("")}
+                    aria-label="Quitar imagen de portada"
                   >
-                    Cancelar
+                    <XIcon />
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
+            </FieldGroup>
+          </Field>
+        </FieldGroup>
+      </Seccion>
 
-            {tiposFiltrados.length === 0 ? (
-              <Empty className="border">
-                <EmptyMedia variant="icon">
-                  <TagsIcon />
-                </EmptyMedia>
-                <EmptyHeader>
-                  <EmptyTitle>Sin tipos disponibles</EmptyTitle>
-                  <EmptyDescription>
-                    {busquedaTipos.trim()
-                      ? "Ningún tipo coincide con tu búsqueda."
-                      : "Crea el primer tipo de encuesta con el botón +."}
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent />
-              </Empty>
+      <Separator />
+
+      <Seccion
+        numero={2}
+        titulo="Tipo de encuesta"
+        descripcion="Selecciona uno o varios tipos para clasificarla."
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {tiposSeleccionadosDatos.length === 0 ? (
+              <span className="text-sm text-muted-foreground">Ningún tipo seleccionado.</span>
             ) : (
-              <FieldSet>
-                <FieldLegend variant="label">Tipos disponibles</FieldLegend>
-                <div className="flex flex-col gap-1.5">
-                  {tiposFiltrados.map((tipo) => (
-                    <Field key={tipo._id} orientation="horizontal" className="items-center gap-2.5">
-                      <Checkbox
-                        id={`tipo-${tipo._id}`}
-                        checked={tiposSeleccionados.includes(tipo._id)}
-                        onCheckedChange={() => toggleTipo(tipo._id)}
-                      />
-                      <FieldLabel htmlFor={`tipo-${tipo._id}`} className="font-normal">
-                        {tipo.nombre}
-                      </FieldLabel>
-                    </Field>
-                  ))}
-                </div>
-              </FieldSet>
+              tiposSeleccionadosDatos.map((tipo, i) => (
+                <BadgeTipoSeleccionado
+                  key={tipo._id}
+                  nombre={tipo.nombre}
+                  color={colorBadge(i)}
+                  onRemove={() => toggleTipo(tipo._id)}
+                />
+              ))
             )}
           </div>
-        )}
 
-        {tab === "preguntas" && (
-          <div className="mt-6 flex flex-col gap-4">
-            {preguntas.length === 0 ? (
-              <Empty className="border">
-                <EmptyMedia variant="icon">
-                  <ListChecksIcon />
-                </EmptyMedia>
-                <EmptyHeader>
-                  <EmptyTitle>Sin preguntas</EmptyTitle>
-                  <EmptyDescription>
-                    Agrega la primera pregunta para empezar a armar tu encuesta.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent />
-              </Empty>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {preguntas.map((p, indice) => (
-                  <Card key={p.key}>
-                    <CardHeader className="flex flex-row items-center justify-between gap-2">
-                      <CardTitle className="text-sm">Pregunta {indice + 1}</CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => quitarPregunta(p.key)}
-                        aria-label={`Eliminar pregunta ${indice + 1}`}
-                      >
-                        <Trash2Icon />
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-4">
-                      <Field>
-                        <FieldLabel htmlFor={`texto-${p.key}`}>Pregunta</FieldLabel>
-                        <Input
-                          id={`texto-${p.key}`}
-                          placeholder="Escribe la pregunta..."
-                          value={p.texto}
-                          onChange={(e) => actualizarPregunta(p.key, { texto: e.target.value })}
-                        />
-                      </Field>
+          <InputGroup>
+            <InputGroupInput
+              id="buscar-tipos"
+              placeholder="Buscar tipo de encuesta..."
+              value={busquedaTipos}
+              onChange={(e) => setBusquedaTipos(e.target.value)}
+            />
+            <InputGroupAddon align="inline-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCreandoTipo(true)}
+              >
+                <PlusIcon data-icon="inline-start" />
+                Añadir otro
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
 
-                      <Field>
-                        <FieldLabel htmlFor={`tipo-${p.key}`}>Tipo de pregunta</FieldLabel>
-                        <Select
-                          items={itemsTipoPregunta}
-                          value={p.tipoPregunta || null}
-                          onValueChange={(v) => actualizarPregunta(p.key, { tipoPregunta: v ?? "" })}
-                        >
-                          <SelectTrigger id={`tipo-${p.key}`} className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              {itemsTipoPregunta.map((item) => (
-                                <SelectItem key={item.value ?? "null"} value={item.value}>
-                                  {item.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </Field>
+          {creandoTipo && (
+            <div className="flex flex-col gap-3 rounded-2xl border p-4">
+              <Field>
+                <FieldLabel htmlFor="nuevo-tipo">Nombre del nuevo tipo</FieldLabel>
+                <Input
+                  id="nuevo-tipo"
+                  autoFocus
+                  placeholder="Ej. Clima laboral"
+                  maxLength={40}
+                  value={nombreTipoNuevo}
+                  onChange={(e) => setNombreTipoNuevo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      guardarTipo()
+                    }
+                  }}
+                />
+                {nombreTipoNuevo.trim().length > 0 && nombreTipoNuevo.trim().length < 2 && (
+                  <FieldError>Mínimo 2 caracteres.</FieldError>
+                )}
+              </Field>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={guardarTipo} disabled={guardandoTipo}>
+                  <CheckIcon data-icon="inline-start" />
+                  {guardandoTipo ? "Guardando..." : "Guardar tipo"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setCreandoTipo(false)
+                    setNombreTipoNuevo("")
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
 
-                      {esTipoConOpciones(p.tipoPregunta) && (
-                        <FieldSet>
-                          <FieldLegend variant="label">Opciones</FieldLegend>
-                          <div className="flex flex-col gap-2">
-                            {p.opciones.map((opcion, j) => (
-                              <div key={j} className="flex items-center gap-2">
-                                <Input
-                                  value={p.opciones[j]}
-                                  onChange={(e) => {
-                                    const opciones = [...p.opciones]
-                                    opciones[j] = e.target.value
-                                    actualizarPregunta(p.key, { opciones })
-                                  }}
-                                  placeholder={`Opción ${j + 1}`}
-                                  aria-label={`Opción ${j + 1} de la pregunta ${indice + 1}`}
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  onClick={() => {
-                                    const opciones = p.opciones.filter((_, k) => k !== j)
-                                    actualizarPregunta(p.key, { opciones })
-                                  }}
-                                  aria-label={`Eliminar opción ${j + 1}`}
-                                >
-                                  <XIcon />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="w-fit"
-                            onClick={() => actualizarPregunta(p.key, { opciones: [...p.opciones, ""] })}
-                          >
-                            <PlusIcon data-icon="inline-start" />
-                            Agregar opción
-                          </Button>
-                        </FieldSet>
-                      )}
-
-                      {p.tipoPregunta === "numerico" && (
-                        <div className="flex gap-3">
-                          <Field className="flex-1">
-                            <FieldLabel htmlFor={`min-${p.key}`}>Valor mínimo</FieldLabel>
-                            <Input
-                              id={`min-${p.key}`}
-                              type="number"
-                              placeholder="Sin mínimo"
-                              value={p.min}
-                              onChange={(e) => actualizarPregunta(p.key, { min: e.target.value })}
-                            />
-                          </Field>
-                          <Field className="flex-1">
-                            <FieldLabel htmlFor={`max-${p.key}`}>Valor máximo</FieldLabel>
-                            <Input
-                              id={`max-${p.key}`}
-                              type="number"
-                              placeholder="Sin máximo"
-                              value={p.max}
-                              onChange={(e) => actualizarPregunta(p.key, { max: e.target.value })}
-                            />
-                          </Field>
-                        </div>
-                      )}
-
-                      <Field orientation="horizontal" className="items-center gap-2.5">
-                        <Checkbox
-                          id={`req-${p.key}`}
-                          checked={p.requerida}
-                          onCheckedChange={(chequeado) => actualizarPregunta(p.key, { requerida: chequeado === true })}
-                        />
-                        <FieldLabel htmlFor={`req-${p.key}`} className="font-normal">
-                          Pregunta obligatoria
-                        </FieldLabel>
-                      </Field>
-                    </CardContent>
-                  </Card>
+          {tiposFiltrados.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {busquedaTipos.trim()
+                ? "Ningún tipo coincide con tu búsqueda."
+                : "Aún no hay tipos disponibles. Crea el primero con el botón Añadir otro."}
+            </p>
+          ) : (
+            <FieldSet>
+              <FieldLegend variant="label">Tipos disponibles</FieldLegend>
+              <div className="flex flex-col gap-1.5">
+                {tiposFiltrados.map((tipo) => (
+                  <Field key={tipo._id} orientation="horizontal" className="items-center gap-2.5">
+                    <Checkbox
+                      id={`tipo-${tipo._id}`}
+                      checked={tiposSeleccionados.includes(tipo._id)}
+                      onCheckedChange={() => toggleTipo(tipo._id)}
+                    />
+                    <FieldLabel htmlFor={`tipo-${tipo._id}`} className="font-normal">
+                      {tipo.nombre}
+                    </FieldLabel>
+                  </Field>
                 ))}
               </div>
-            )}
+            </FieldSet>
+          )}
+        </div>
+      </Seccion>
 
-            <Button variant="outline" className="w-fit" onClick={agregarPregunta}>
-              <PlusIcon data-icon="inline-start" />
-              Agregar pregunta
-            </Button>
-          </div>
-        )}
-      </Tabs>
+      <Separator />
 
-      <div className="sticky bottom-0 z-30 -mx-4 border-t bg-background/90 px-4 py-3 backdrop-blur-sm md:-mx-8 md:px-8">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-end gap-2">
-          <span className="mr-auto hidden text-xs text-muted-foreground md:block">
-            Revisa cómo se verá antes de guardar.
-          </span>
-          <span className="mr-auto text-xs text-muted-foreground md:hidden">
-            La previsualización solo está disponible en desktop.
-          </span>
+      <Seccion
+        numero={3}
+        titulo="Preguntas"
+        descripcion="Define las preguntas que responderán las personas."
+      >
+        <div className="flex flex-col gap-4">
+          {preguntas.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Aún no has agregado preguntas.
+            </p>
+          )}
+
+          {preguntas.map((p, indice) => (
+            <Card key={p.key}>
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
+                <CardTitle className="text-sm">Pregunta {indice + 1}</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => quitarPregunta(p.key)}
+                  aria-label={`Eliminar pregunta ${indice + 1}`}
+                >
+                  <Trash2Icon />
+                </Button>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <Field>
+                  <FieldLabel htmlFor={`texto-${p.key}`}>Pregunta</FieldLabel>
+                  <Input
+                    id={`texto-${p.key}`}
+                    placeholder="Escribe la pregunta..."
+                    value={p.texto}
+                    onChange={(e) => actualizarPregunta(p.key, { texto: e.target.value })}
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel>Tipo de pregunta</FieldLabel>
+                  <TipoPreguntaPills
+                    value={p.tipoPregunta}
+                    onChange={(tipo) => actualizarPregunta(p.key, { tipoPregunta: tipo })}
+                  />
+                </Field>
+
+                {esTipoConOpciones(p.tipoPregunta) && (
+                  <FieldSet>
+                    <FieldLegend variant="label">Opciones</FieldLegend>
+                    <div className="flex flex-col gap-2">
+                      {p.opciones.map((opcion, j) => (
+                        <div key={j} className="flex items-center gap-2">
+                          <Input
+                            value={p.opciones[j]}
+                            onChange={(e) => {
+                              const opciones = [...p.opciones]
+                              opciones[j] = e.target.value
+                              actualizarPregunta(p.key, { opciones })
+                            }}
+                            placeholder={`Opción ${j + 1}`}
+                            aria-label={`Opción ${j + 1} de la pregunta ${indice + 1}`}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => {
+                              const opciones = p.opciones.filter((_, k) => k !== j)
+                              actualizarPregunta(p.key, { opciones })
+                            }}
+                            aria-label={`Eliminar opción ${j + 1}`}
+                          >
+                            <XIcon />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-fit"
+                      onClick={() => actualizarPregunta(p.key, { opciones: [...p.opciones, ""] })}
+                    >
+                      <PlusIcon data-icon="inline-start" />
+                      Agregar opción
+                    </Button>
+                  </FieldSet>
+                )}
+
+                <Field orientation="horizontal" className="items-center gap-2.5">
+                  <Checkbox
+                    id={`req-${p.key}`}
+                    checked={p.requerida}
+                    onCheckedChange={(chequeado) => actualizarPregunta(p.key, { requerida: chequeado === true })}
+                  />
+                  <FieldLabel htmlFor={`req-${p.key}`} className="font-normal">
+                    Pregunta obligatoria
+                  </FieldLabel>
+                </Field>
+              </CardContent>
+            </Card>
+          ))}
+
+          <button
+            type="button"
+            onClick={agregarPregunta}
+            className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border p-6 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none"
+          >
+            <PlusIcon className="size-5" />
+            <span className="text-sm font-medium">Agregar pregunta</span>
+          </button>
+        </div>
+      </Seccion>
+
+      <Separator />
+
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">
+          Revisa cómo se verá antes de guardar. La previsualización solo está disponible en desktop.
+        </p>
+        <div className="flex flex-wrap justify-end gap-2">
           <Button variant="outline" onClick={() => setPreviewAbierto(true)}>
             <EyeIcon data-icon="inline-start" />
             Previsualizar

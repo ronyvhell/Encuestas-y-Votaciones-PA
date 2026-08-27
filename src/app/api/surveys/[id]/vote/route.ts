@@ -113,21 +113,6 @@ function validarRespuestas(
       continue
     }
 
-    if (pregunta.tipoPregunta === "numerico") {
-      const numero = Number(valor)
-      if (!Number.isFinite(numero)) {
-        errores.push(`La pregunta "${pregunta.texto}" debe ser un número.`)
-      } else {
-        if (pregunta.config.min !== null && numero < pregunta.config.min) {
-          errores.push(`La pregunta "${pregunta.texto}" no puede ser menor a ${pregunta.config.min}.`)
-        }
-        if (pregunta.config.max !== null && numero > pregunta.config.max) {
-          errores.push(`La pregunta "${pregunta.texto}" no puede ser mayor a ${pregunta.config.max}.`)
-        }
-      }
-      continue
-    }
-
     if (pregunta.tipoPregunta === "verdadero_falso") {
       if (valor !== true && valor !== false) {
         errores.push(`La pregunta "${pregunta.texto}" tiene una respuesta no válida.`)

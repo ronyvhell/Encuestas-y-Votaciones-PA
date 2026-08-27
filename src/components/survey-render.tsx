@@ -19,9 +19,11 @@ import type {
 } from "@/lib/types"
 
 function TituloTipoPregunta({ tipo }: { tipo: string }) {
+  const label = TIPOS_PREGUNTA.find((t) => t.value === tipo)?.label
+  if (!label) return null
   return (
     <span className="text-xs font-normal text-muted-foreground">
-      {TIPOS_PREGUNTA.find((t) => t.value === tipo)?.label ?? tipo}
+      {label}
     </span>
   )
 }
@@ -250,29 +252,6 @@ export function SurveyRender({
                   onChange={(e) => onChange?.(pregunta._id, e.target.value)}
                   disabled={soloLectura}
                 />
-              ) : pregunta.tipoPregunta === "numerico" ? (
-                <Input
-                  type="number"
-                  placeholder={
-                    pregunta.config.min !== null || pregunta.config.max !== null
-                      ? `${pregunta.config.min ?? "∞"} — ${pregunta.config.max ?? "∞"}`
-                      : "Escribe un número..."
-                  }
-                  min={pregunta.config.min ?? undefined}
-                  max={pregunta.config.max ?? undefined}
-                  value={
-                    typeof valores?.[pregunta._id] === "number"
-                      ? String(valores[pregunta._id])
-                      : typeof valores?.[pregunta._id] === "string"
-                        ? (valores[pregunta._id] as string)
-                        : ""
-                  }
-                  onChange={(e) => {
-                    const v = e.target.value
-                    onChange?.(pregunta._id, v === "" ? undefined : Number(v))
-                  }}
-                  disabled={soloLectura}
-                />
               ) : pregunta.tipoPregunta === "verdadero_falso" ? (
                 <OpcionVerdaderoFalso
                   preguntaId={pregunta._id}
@@ -299,7 +278,7 @@ export function SurveyRender({
                     </div>
                   ))}
                 </RadioGroup>
-              ) : (
+              ) : esTipoConOpciones(pregunta.tipoPregunta) ? (
                 <OpcionesCheckbox
                   preguntaId={pregunta._id}
                   opciones={pregunta.opciones}
@@ -311,6 +290,10 @@ export function SurveyRender({
                   onChange={(id, nuevo) => onChange?.(id, nuevo)}
                   disabled={soloLectura}
                 />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Este tipo de pregunta ya no está disponible.
+                </p>
               )}
 
               {interactivo && pregunta.requerida && !valores?.[pregunta._id] && (

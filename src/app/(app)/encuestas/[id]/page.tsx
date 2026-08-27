@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import Link from "next/link"
 import { cookies, headers } from "next/headers"
 
 import { connectDB } from "@/lib/db"
@@ -7,10 +8,11 @@ import { computarResultados } from "@/lib/results"
 import { hashIp } from "@/lib/ip"
 import { auth } from "@/auth"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { SurveyRender } from "@/components/survey-render"
 import { VoteForm } from "@/components/vote-form"
 import { SurveyAdmin } from "@/components/survey-admin"
-import { CheckCircle2Icon } from "lucide-react"
+import { ArrowLeftIcon, CheckCircle2Icon } from "lucide-react"
 import type { EncuestaUI } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
@@ -75,7 +77,18 @@ export default async function DetalleEncuestaPage({ params }: PageProps<"/encues
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       {esPropietario && (
-        <SurveyAdmin encuestaId={datos._id} estado={datos.estado} />
+        <div className="flex flex-col gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit"
+            render={<Link href="/encuestas" />}
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            Volver
+          </Button>
+          <SurveyAdmin encuestaId={datos._id} estado={datos.estado} />
+        </div>
       )}
 
       {yaVoto ? (
