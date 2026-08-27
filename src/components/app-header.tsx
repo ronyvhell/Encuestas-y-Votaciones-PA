@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
@@ -15,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { cerrarSesion } from "@/lib/actions"
 import {
   ClipboardListIcon,
   LogOutIcon,
@@ -89,9 +89,8 @@ export function AppHeader({ user }: { user: { id: string; name?: string; email?:
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault()
-                    cerrarSesion()
+                  onClick={() => {
+                    signOut({ callbackUrl: "/encuestas" })
                   }}
                 >
                   <LogOutIcon data-icon="inline-start" />
