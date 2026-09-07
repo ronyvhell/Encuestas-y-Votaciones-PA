@@ -82,6 +82,7 @@ export default async function DetalleEncuestaPage({ params }: PageProps<"/encues
             variant="ghost"
             size="sm"
             className="w-fit"
+            nativeButton={false}
             render={<Link href="/encuestas" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />

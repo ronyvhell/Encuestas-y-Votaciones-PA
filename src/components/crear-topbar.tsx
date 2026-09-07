@@ -14,6 +14,7 @@ export function CrearTopbar() {
       <Button
         variant="ghost"
         size="sm"
+        nativeButton={false}
         render={<Link href="/encuestas" />}
       >
         <ArrowLeftIcon data-icon="inline-start" />
