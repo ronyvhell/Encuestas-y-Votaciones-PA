@@ -1,15 +1,94 @@
 
-> pa-encuestas-y-votaciones@0.1.0 dev
-> next dev
+> pa-encuestas-y-votaciones@0.1.0 local
+> concurrently -k -n db,next "npm:db" "npm:dev"
 
-▲ Next.js 16.3.3 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.67.68:3000
-- Environments: .env.local
-✓ Ready in 869ms
-✓ Running next.config.ts took 74ms
-
- GET /encuestas 200 in 2.4s (next.js: 982ms, application-code: 1406ms)
- GET /encuestas 200 in 30ms (next.js: 13ms, application-code: 18ms)
- GET /encuestas 200 in 51ms (next.js: 11ms, application-code: 40ms)
- GET /encuestas 200 in 107ms (next.js: 9ms, application-code: 98ms)
+[db] 
+[db] > pa-encuestas-y-votaciones@0.1.0 db
+[db] > node scripts/dev-db.mjs
+[db] 
+[next] 
+[next] > pa-encuestas-y-votaciones@0.1.0 dev
+[next] > next dev
+[next] 
+[next] ▲ Next.js 16.3.3 (Turbopack)
+[next] - Local:         http://localhost:3000
+[next] - Network:       http://172.19.32.1:3000
+[next] - Environments: .env.local
+[next] ✓ Ready in 547ms
+[next] ✓ Running next.config.ts took 45ms
+[next] 
+[db] 
+[db]   MongoDB en memoria listo
+[db]   URI: mongodb://127.0.0.1:27017/encuestas
+[db] 
+[next]  GET /admin/prematriculas/cmupszcor001qxwmqkoedp9iv 404 in 888ms (next.js: 662ms, application-code: 226ms)
+[next] [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+[next] 
+[next] - A server/client branch `if (typeof window !== 'undefined')`.
+[next] - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+[next] - Date formatting in a user's locale which doesn't match the server.
+[next] - External changing data without sending a snapshot of it along with the HTML.
+[next] - Invalid HTML tag nesting.
+[next] 
+[next] It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+[next] 
+[next] https://react.dev/link/hydration-mismatch
+[next] 
+[next]   ...
+[next]     <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+[next]       <AppDevOverlayErrorBoundary globalError={[...]}>
+[next]         <ReplaySsrOnlyErrors>
+[next]         <DevRootHTTPAccessFallbackBoundary>
+[next]           <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+[next]             <HTTPAccessFallbackErrorBoundary pathname="/admin/pre..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+[next]               <RedirectBoundary>
+[next]                 <RedirectErrorBoundary router={{...}}>
+[next]                   <Head>
+[next]                   <__next_root_layout_boundary__>
+[next]                     <SegmentViewNode type="layout" pagePath="layout.tsx">
+[next]                       <SegmentTrieNode>
+[next]                       <link>
+[next]                       <script>
+[next]                       <script>
+[next]                       <script>
+[next]                       <script>
+[next]                       <script>
+[next]                       <script>
+[next]                       <RootLayout>
+[next]                         <html lang="es" suppressHydrationWarning={true} className="h-full ant...">
+[next]                           <body
+[next]                             className="min-h-full flex flex-col"
+[next] -                           cz-shortcut-listen="true"
+[next]                           >
+[next]                   ...
+[next]  
+[next]  GET /admin/configuracion/institucion 404 in 93ms (next.js: 16ms, application-code: 77ms)
+[next]  GET /admin/configuracion/periodos 404 in 106ms (next.js: 13ms, application-code: 93ms)
+[next]  GET /admin/configuracion/pago 404 in 129ms (next.js: 13ms, application-code: 116ms)
+[next]  GET /admin/configuracion/grados 404 in 104ms (next.js: 11ms, application-code: 94ms)
+[next]  GET /admin/configuracion 404 in 73ms (next.js: 12ms, application-code: 61ms)
+[next]  GET /admin/configuracion/institucion 404 in 43ms (next.js: 9ms, application-code: 34ms)
+[next]  GET /admin/configuracion/periodos 404 in 48ms (next.js: 10ms, application-code: 37ms)
+[next]  GET /admin/configuracion/pago 404 in 46ms (next.js: 8ms, application-code: 38ms)
+[next]  GET /admin/configuracion/grados 404 in 48ms (next.js: 9ms, application-code: 39ms)
+[next]  GET /admin/configuracion 404 in 37ms (next.js: 10ms, application-code: 27ms)
+[next]  GET /admin/configuracion/institucion 404 in 58ms (next.js: 8ms, application-code: 50ms)
+[next]  GET /admin/configuracion 404 in 67ms (next.js: 12ms, application-code: 55ms)
+[next]  GET /login 200 in 162ms (next.js: 35ms, application-code: 128ms)
+[next]  GET /admin/login 404 in 55ms (next.js: 8ms, application-code: 47ms)
+[next]  GET /admin/configuracion 404 in 53ms (next.js: 8ms, application-code: 45ms)
+[next]  GET /admin/configuracion/institucion 404 in 53ms (next.js: 9ms, application-code: 44ms)
+[next]  GET /encuestas 200 in 974ms (next.js: 74ms, application-code: 900ms)
+[next]  GET /encuestas 200 in 19ms (next.js: 8ms, application-code: 11ms)
+[next]  GET /encuestas 200 in 79ms (next.js: 7ms, application-code: 72ms)
+[next]  GET /dashboard 200 in 323ms (next.js: 32ms, proxy.ts: 133ms, application-code: 158ms)
+[next]  GET /encuestas/nueva 200 in 75ms (next.js: 32ms, proxy.ts: 12ms, application-code: 31ms)
+[next]  GET /api/survey-types 200 in 325ms (next.js: 250ms, application-code: 75ms)
+[next]  GET /api/survey-types 200 in 25ms (next.js: 12ms, application-code: 13ms)
+[next]  GET /encuestas 200 in 67ms (next.js: 7ms, application-code: 60ms)
+[next]  GET /dashboard 200 in 134ms (next.js: 8ms, proxy.ts: 13ms, application-code: 114ms)
+[next]  GET /admin/login 404 in 40ms (next.js: 8ms, application-code: 32ms)
+[next]  GET /terminos 404 in 38ms (next.js: 6ms, application-code: 31ms)
+[next]  GET / 307 in 124ms (next.js: 53ms, application-code: 71ms)
+[next]  GET /encuestas 200 in 61ms (next.js: 6ms, application-code: 55ms)
+[next]  GET /encuestas 200 in 61ms (next.js: 5ms, application-code: 56ms)

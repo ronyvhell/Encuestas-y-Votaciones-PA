@@ -7,6 +7,16 @@ import { sileo } from "sileo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
@@ -25,6 +35,7 @@ import type { EncuestaUI, RespuestasUI, TipoUI } from "@/lib/types"
 import {
   CheckIcon,
   EyeIcon,
+  InfoIcon,
   PlusIcon,
   SaveIcon,
   Trash2Icon,
@@ -104,9 +115,11 @@ function BadgeTipoSeleccionado({
 function TipoPreguntaPills({
   value,
   onChange,
+  disabled = false,
 }: {
   value: string
   onChange: (tipo: string) => void
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -117,9 +130,10 @@ function TipoPreguntaPills({
             key={tipo.value}
             type="button"
             onClick={() => onChange(activo ? "" : tipo.value)}
+            disabled={disabled}
             aria-pressed={activo}
             className={cn(
-              "rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
               activo
                 ? colorBadge(i)
                 : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -133,23 +147,36 @@ function TipoPreguntaPills({
   )
 }
 
-export function CreateSurveyForm() {
+export function CreateSurveyForm({ encuesta }: { encuesta?: EncuestaUI }) {
   const router = useRouter()
+  const esEdicion = !!encuesta
+  const bloqueado = esEdicion && (encuesta?.votos ?? 0) > 0
 
-  const [titulo, setTitulo] = useState("")
-  const [descripcion, setDescripcion] = useState("")
-  const [imagenPortada, setImagenPortada] = useState("")
+  const [titulo, setTitulo] = useState(encuesta?.titulo ?? "")
+  const [descripcion, setDescripcion] = useState(encuesta?.descripcion ?? "")
+  const [imagenPortada, setImagenPortada] = useState(encuesta?.imagenPortada ?? "")
   const [subiendoImagen, setSubiendoImagen] = useState(false)
 
   const [tiposDisponibles, setTiposDisponibles] = useState<TipoUI[]>([])
-  const [tiposSeleccionados, setTiposSeleccionados] = useState<string[]>([])
+  const [tiposSeleccionados, setTiposSeleccionados] = useState<string[]>(
+    encuesta?.tipos.map((t) => t._id) ?? []
+  )
   const [busquedaTipos, setBusquedaTipos] = useState("")
   const [creandoTipo, setCreandoTipo] = useState(false)
   const [nombreTipoNuevo, setNombreTipoNuevo] = useState("")
   const [guardandoTipo, setGuardandoTipo] = useState(false)
 
-  const [preguntas, setPreguntas] = useState<PreguntaForm[]>([])
+  const [preguntas, setPreguntas] = useState<PreguntaForm[]>(
+    encuesta?.preguntas.map((p) => ({
+      key: p._id,
+      texto: p.texto,
+      tipoPregunta: p.tipoPregunta,
+      opciones: p.opciones.length > 0 ? p.opciones : ["", ""],
+      requerida: p.requerida,
+    })) ?? []
+  )
   const [guardando, setGuardando] = useState(false)
+  const [confirmarAbierto, setConfirmarAbierto] = useState(false)
 
   const [previewAbierto, setPreviewAbierto] = useState(false)
   const [respuestasPreview, setRespuestasPreview] = useState<RespuestasUI>({})
@@ -290,7 +317,22 @@ export function CreateSurveyForm() {
     return errores
   }
 
+  function solicitarGuardar() {
+    const errores = validarEncuesta()
+    if (errores.length > 0) {
+      sileo.warning({
+        title: "Revisa la encuesta",
+        description: errores.join(" · "),
+        duration: 8000,
+      })
+      return
+    }
+    setConfirmarAbierto(true)
+  }
+
   async function guardar() {
+    setConfirmarAbierto(false)
+
     const errores = validarEncuesta()
     if (errores.length > 0) {
       sileo.warning({
@@ -301,24 +343,55 @@ export function CreateSurveyForm() {
       return
     }
 
+    const payload = {
+      titulo: titulo.trim(),
+      descripcion: descripcion.trim(),
+      imagenPortada,
+      tipos: tiposSeleccionados,
+      preguntas: preguntas.map((p) => ({
+        texto: p.texto.trim(),
+        tipoPregunta: p.tipoPregunta,
+        opciones: p.opciones.map((o) => o.trim()).filter((o) => o.length > 0),
+        requerida: p.requerida,
+      })),
+    }
+
+    if (esEdicion && encuesta) {
+      setGuardando(true)
+      try {
+        const res = await fetch(`/api/surveys/${encuesta._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        const datos = await res.json().catch(() => null)
+
+        if (!res.ok) {
+          sileo.warning({
+            title: "No se pudieron guardar los cambios",
+            description: datos?.error ?? "Intenta de nuevo.",
+          })
+          return
+        }
+
+        sileo.success({ title: "Cambios guardados", description: "Tu encuesta se actualizó." })
+        router.push(`/encuestas/${encuesta._id}`)
+        router.refresh()
+      } catch {
+        sileo.error({ title: "Error inesperado", description: "No se pudieron guardar los cambios." })
+      } finally {
+        setGuardando(false)
+      }
+      return
+    }
+
     setGuardando(true)
 
     const promesa = (async () => {
       const res = await fetch("/api/surveys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          titulo: titulo.trim(),
-          descripcion: descripcion.trim(),
-          imagenPortada,
-          tipos: tiposSeleccionados,
-          preguntas: preguntas.map((p) => ({
-            texto: p.texto.trim(),
-            tipoPregunta: p.tipoPregunta,
-            opciones: p.opciones.map((o) => o.trim()).filter((o) => o.length > 0),
-            requerida: p.requerida,
-          })),
-        }),
+        body: JSON.stringify(payload),
       })
       const datos = await res.json().catch(() => null)
       if (!res.ok) {
@@ -408,9 +481,13 @@ export function CreateSurveyForm() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">Crear encuesta</h1>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          {esEdicion ? "Editar encuesta" : "Crear encuesta"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Completa las secciones para armar tu encuesta.
+          {esEdicion
+            ? "Actualiza la información de tu encuesta."
+            : "Completa las secciones para armar tu encuesta."}
         </p>
       </div>
 
@@ -612,6 +689,16 @@ export function CreateSurveyForm() {
         descripcion="Define las preguntas que responderán las personas."
       >
         <div className="flex flex-col gap-4">
+          {bloqueado && (
+            <div className="flex items-start gap-2 rounded-2xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+              <InfoIcon className="mt-0.5 size-4 shrink-0" />
+              <p>
+                Esta encuesta ya tiene {encuesta?.votos}{" "}
+                {encuesta?.votos === 1 ? "voto" : "votos"}, por lo que las preguntas no se pueden
+                modificar. Solo puedes editar la información general.
+              </p>
+            </div>
+          )}
           {preguntas.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Aún no has agregado preguntas.
@@ -622,14 +709,16 @@ export function CreateSurveyForm() {
             <Card key={p.key}>
               <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle className="text-sm">Pregunta {indice + 1}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => quitarPregunta(p.key)}
-                  aria-label={`Eliminar pregunta ${indice + 1}`}
-                >
-                  <Trash2Icon />
-                </Button>
+                {!bloqueado && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => quitarPregunta(p.key)}
+                    aria-label={`Eliminar pregunta ${indice + 1}`}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                )}
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <Field>
@@ -638,6 +727,7 @@ export function CreateSurveyForm() {
                     id={`texto-${p.key}`}
                     placeholder="Escribe la pregunta..."
                     value={p.texto}
+                    disabled={bloqueado}
                     onChange={(e) => actualizarPregunta(p.key, { texto: e.target.value })}
                   />
                 </Field>
@@ -647,6 +737,7 @@ export function CreateSurveyForm() {
                   <TipoPreguntaPills
                     value={p.tipoPregunta}
                     onChange={(tipo) => actualizarPregunta(p.key, { tipoPregunta: tipo })}
+                    disabled={bloqueado}
                   />
                 </Field>
 
@@ -658,6 +749,7 @@ export function CreateSurveyForm() {
                         <div key={j} className="flex items-center gap-2">
                           <Input
                             value={p.opciones[j]}
+                            disabled={bloqueado}
                             onChange={(e) => {
                               const opciones = [...p.opciones]
                               opciones[j] = e.target.value
@@ -666,30 +758,34 @@ export function CreateSurveyForm() {
                             placeholder={`Opción ${j + 1}`}
                             aria-label={`Opción ${j + 1} de la pregunta ${indice + 1}`}
                           />
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => {
-                              const opciones = p.opciones.filter((_, k) => k !== j)
-                              actualizarPregunta(p.key, { opciones })
-                            }}
-                            aria-label={`Eliminar opción ${j + 1}`}
-                          >
-                            <XIcon />
-                          </Button>
+                          {!bloqueado && (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => {
+                                const opciones = p.opciones.filter((_, k) => k !== j)
+                                actualizarPregunta(p.key, { opciones })
+                              }}
+                              aria-label={`Eliminar opción ${j + 1}`}
+                            >
+                              <XIcon />
+                            </Button>
+                          )}
                         </div>
                       ))}
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-fit"
-                      onClick={() => actualizarPregunta(p.key, { opciones: [...p.opciones, ""] })}
-                    >
-                      <PlusIcon data-icon="inline-start" />
-                      Agregar opción
-                    </Button>
+                    {!bloqueado && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-fit"
+                        onClick={() => actualizarPregunta(p.key, { opciones: [...p.opciones, ""] })}
+                      >
+                        <PlusIcon data-icon="inline-start" />
+                        Agregar opción
+                      </Button>
+                    )}
                   </FieldSet>
                 )}
 
@@ -697,6 +793,7 @@ export function CreateSurveyForm() {
                   <Checkbox
                     id={`req-${p.key}`}
                     checked={p.requerida}
+                    disabled={bloqueado}
                     onCheckedChange={(chequeado) => actualizarPregunta(p.key, { requerida: chequeado === true })}
                   />
                   <FieldLabel htmlFor={`req-${p.key}`} className="font-normal">
@@ -707,14 +804,16 @@ export function CreateSurveyForm() {
             </Card>
           ))}
 
-          <button
-            type="button"
-            onClick={agregarPregunta}
-            className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border p-6 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none"
-          >
-            <PlusIcon className="size-5" />
-            <span className="text-sm font-medium">Agregar pregunta</span>
-          </button>
+          {!bloqueado && (
+            <button
+              type="button"
+              onClick={agregarPregunta}
+              className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-border p-6 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/30 focus-visible:outline-none"
+            >
+              <PlusIcon className="size-5" />
+              <span className="text-sm font-medium">Agregar pregunta</span>
+            </button>
+          )}
         </div>
       </Seccion>
 
@@ -729,12 +828,35 @@ export function CreateSurveyForm() {
             <EyeIcon data-icon="inline-start" />
             Previsualizar
           </Button>
-          <Button onClick={guardar} disabled={guardando}>
+          <Button onClick={solicitarGuardar} disabled={guardando}>
             <SaveIcon data-icon="inline-start" />
-            {guardando ? "Guardando..." : "Guardar"}
+            {guardando ? "Guardando..." : esEdicion ? "Guardar cambios" : "Guardar"}
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={confirmarAbierto} onOpenChange={setConfirmarAbierto}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {esEdicion ? "¿Guardar los cambios?" : "¿Guardar esta encuesta?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {esEdicion
+                ? "Se actualizará la información de la encuesta."
+                : `Se guardará como borrador con ${preguntas.length} ${
+                    preguntas.length === 1 ? "pregunta" : "preguntas"
+                  }. Podrás publicarla cuando quieras.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={guardar} disabled={guardando}>
+              {guardando ? "Guardando..." : esEdicion ? "Guardar cambios" : "Guardar borrador"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <PreviewPanel open={previewAbierto} onOpenChange={setPreviewAbierto}>
         <SurveyRender

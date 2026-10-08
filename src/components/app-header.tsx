@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
-  ClipboardListIcon,
   LogOutIcon,
   MoonIcon,
   PlusIcon,
@@ -60,10 +59,6 @@ export function AppHeader({ user }: { user: { id: string; name?: string; email?:
             <Button variant="default" size="sm" onClick={() => router.push("/encuestas/nueva")}>
               <PlusIcon data-icon="inline-start" />
               Crear Encuesta
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => router.push("/encuestas")}>
-              <ClipboardListIcon data-icon="inline-start" />
-              Visualizar Encuestas
             </Button>
 
             <DropdownMenu>

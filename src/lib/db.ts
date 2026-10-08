@@ -22,6 +22,12 @@ export async function connectDB(): Promise<typeof mongoose> {
     cached.promise = mongoose.connect(obtenerUri()).then((m) => m)
   }
 
-  cached.conn = await cached.promise
+  try {
+    cached.conn = await cached.promise
+  } catch (error) {
+    // Sin esto, una instancia "caliente" reutiliza la promesa rechazada y falla para siempre.
+    cached.promise = null
+    throw error
+  }
   return cached.conn
 }

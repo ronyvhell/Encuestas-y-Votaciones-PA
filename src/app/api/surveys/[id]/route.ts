@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { connectDB } from "@/lib/db"
 import { Encuesta, Voto } from "@/lib/models"
 import { computarResultados } from "@/lib/results"
+import { parseEncuestaInput } from "@/lib/encuesta-input"
 import { hashIp, obtenerIp } from "@/lib/ip"
 import { auth } from "@/auth"
 
@@ -27,11 +28,16 @@ export async function GET(request: Request, ctx: RouteContext<"/api/surveys/[id]
 
     const cookieStore = await cookies()
     const vid = cookieStore.get("vid")?.value ?? null
-    const ipHash = hashIp(obtenerIp(request))
+    const ip = obtenerIp(request)
+    const ipHash = ip ? hashIp(ip) : ""
 
-    const yaVoto = vid
-      ? await Voto.exists({ encuestaId: encuesta._id, $or: [{ voterId: vid }, { ipHash }] })
-      : await Voto.exists({ encuestaId: encuesta._id, voterId: ipHash })
+    const duplicados: Record<string, unknown>[] = []
+    if (vid) duplicados.push({ voterId: vid })
+    if (ipHash) duplicados.push({ ipHash })
+    const yaVoto =
+      duplicados.length > 0
+        ? await Voto.exists({ encuestaId: encuesta._id, $or: duplicados })
+        : null
 
     let resultados = null
     if (yaVoto || esPropietario) {
@@ -94,7 +100,22 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/surveys/[i
       return NextResponse.json({ ok: true, estado: encuesta.estado })
     }
 
-    return NextResponse.json({ error: "Acción no válida." }, { status: 400 })
+    const parsed = parseEncuestaInput(body)
+    if ("error" in parsed) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
+
+    const { data } = parsed
+    encuesta.set("titulo", data.titulo)
+    encuesta.set("descripcion", data.descripcion)
+    encuesta.set("imagenPortada", data.imagenPortada)
+    encuesta.set("tipos", data.tipos)
+    if (encuesta.votos === 0) {
+      encuesta.set("preguntas", data.preguntas)
+    }
+    await encuesta.save()
+
+    return NextResponse.json({ ok: true, preguntasBloqueadas: encuesta.votos > 0 })
   } catch (error) {
     console.error("Error al actualizar encuesta:", error)
     return NextResponse.json({ error: "Error interno del servidor." }, { status: 500 })

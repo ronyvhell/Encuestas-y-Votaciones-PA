@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "db": "node scripts/dev-db.mjs",
+    "local": "concurrently -k -n db,next \"npm:db\" \"npm:dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -30,8 +32,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.5",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "mongodb-memory-server": "^11.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

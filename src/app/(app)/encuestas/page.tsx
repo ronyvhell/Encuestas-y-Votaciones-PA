@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db"
 import { Encuesta } from "@/lib/models"
-import { SurveyCard } from "@/components/survey-card"
+import { SurveyGrid } from "@/components/survey-grid"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { auth } from "@/auth"
 import { ClipboardListIcon, SearchXIcon } from "lucide-react"
@@ -51,6 +51,7 @@ export default async function EncuestasPage({ searchParams }: PageProps<"/encues
     preguntas: e.preguntas.length,
     votos: e.votos,
     createdAt: e.createdAt.toISOString(),
+    esPropietario: session?.user?.id === e.creador.toString(),
   }))
 
   return (
@@ -88,11 +89,7 @@ export default async function EncuestasPage({ searchParams }: PageProps<"/encues
           <EmptyContent />
         </Empty>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {datos.map((encuesta) => (
-            <SurveyCard key={encuesta._id} encuesta={encuesta} />
-          ))}
-        </div>
+        <SurveyGrid encuestas={datos} />
       )}
     </div>
   )

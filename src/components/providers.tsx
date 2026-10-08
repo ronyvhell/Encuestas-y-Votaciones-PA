@@ -11,7 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
       {children}
-      <Toaster position="bottom-right" theme={resolvedTheme} />
+      <Toaster position="top-center" theme={resolvedTheme} />
     </TooltipProvider>
   )
 }

@@ -7,6 +7,7 @@ import { Encuesta, Voto } from "@/lib/models"
 import { computarResultados } from "@/lib/results"
 import { esTipoConOpciones } from "@/lib/constants"
 import { hashIp, obtenerIp } from "@/lib/ip"
+import { auth } from "@/auth"
 
 export async function POST(request: Request, ctx: RouteContext<"/api/surveys/[id]/vote">) {
   try {
@@ -26,6 +27,14 @@ export async function POST(request: Request, ctx: RouteContext<"/api/surveys/[id
       return NextResponse.json({ error: "Esta encuesta aún no está publicada." }, { status: 400 })
     }
 
+    const session = await auth()
+    if (session?.user?.id && session.user.id === encuesta.creador.toString()) {
+      return NextResponse.json(
+        { error: "El creador no puede votar su propia encuesta." },
+        { status: 403 }
+      )
+    }
+
     const errores = validarRespuestas(encuesta.preguntas, body.respuestas)
     if (errores.length > 0) {
       return NextResponse.json({ error: errores.join(" ") }, { status: 400 })
@@ -33,12 +42,17 @@ export async function POST(request: Request, ctx: RouteContext<"/api/surveys/[id
 
     const cookieStore = await cookies()
     let vid = cookieStore.get("vid")?.value ?? null
-    const ipHash = hashIp(obtenerIp(request))
-    const voterId = vid ?? ipHash
+    const ip = obtenerIp(request)
+    const ipHash = ip ? hashIp(ip) : ""
+    const voterId = vid ?? (ipHash || randomUUID())
 
-    const yaVoto = vid
-      ? await Voto.exists({ encuestaId: encuesta._id, $or: [{ voterId: vid }, { ipHash }] })
-      : await Voto.exists({ encuestaId: encuesta._id, voterId: ipHash })
+    const duplicados: Record<string, unknown>[] = []
+    if (vid) duplicados.push({ voterId: vid })
+    if (ipHash) duplicados.push({ ipHash })
+    const yaVoto =
+      duplicados.length > 0
+        ? await Voto.exists({ encuestaId: encuesta._id, $or: duplicados })
+        : null
     if (yaVoto) {
       return NextResponse.json({ error: "Ya has votado en esta encuesta." }, { status: 409 })
     }

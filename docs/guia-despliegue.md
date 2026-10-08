@@ -5,6 +5,10 @@ Guía paso a paso para llevar la plataforma a producción:
 - **Frontend/API:** Vercel (gratuito, Hobby).
 - **Base de datos:** MongoDB Atlas (cluster M0 gratis).
 
+> **Desarrollo local:** este documento cubre el paso a producción. Para trabajar
+> en local no necesitas Atlas: usa `npm run local` (MongoDB en memoria). Ver
+> `docs/contexto-proyecto.md`.
+
 > **Aviso importante — Imágenes de portada:** el botón "Subir" guarda archivos en
 > `public/uploads/`, y en Vercel el sistema de archivos es **efímero**: las
 > imágenes subidas **se pierden en cada deploy** (y en cada ejecución). Para
@@ -144,6 +148,6 @@ automáticamente. Para migrarlos (si los quieres conservar):
 2. Crea una encuesta (borrador), publícala y respóndela desde otra pestaña en
    modo incógnito (verás el bloqueo de doble voto por IP).
 3. Abre la consola de Atlas → **Browse Collections** en la base `encuestas` y
-   confirma que aparecen `users`, `surveystypes`, `encuestas` y `votos`.
+   confirma que aparecen `users`, `surveytypes`, `encuestas` y `votos`.
 4. Prueba el botón **Compartir** de una encuesta publicada (copia el link y
    ábrelo en incógnito).

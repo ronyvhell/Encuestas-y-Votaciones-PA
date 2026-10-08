@@ -27,21 +27,30 @@ Incluye:
 - **Sileo** — sistema de notificaciones (toasts).
 - **Auth.js (NextAuth v5)** — login y registro con correo y contraseña,
   contraseñas cifradas con **bcrypt**, sesiones por cookie segura.
-- **MongoDB 8.3** local (instalado como servicio de Windows) + **Mongoose 9**
-  como capa de acceso a datos.
+- **MongoDB** vía **Mongoose 9** como capa de acceso a datos. En desarrollo se
+  levanta **en memoria** con `mongodb-memory-server` (no hay que instalar
+  MongoDB; los datos son efímeros). En producción se usa MongoDB Atlas.
 
 ---
 
 ## Cómo levantarlo
 
-1. Asegúrate de que el servicio **MongoDB** esté corriendo en tu máquina.
-2. Instala dependencias: `npm install`.
-3. Corre el servidor: `npm run dev` → abre `http://localhost:3000`.
-4. Otros comandos: `npm run build` (build de producción), `npm run lint`
-   (revisión de código).
-5. Configuración en `.env.local`:
-   - `MONGODB_URI` — dirección de la base de datos.
+1. Instala dependencias: `npm install`.
+2. Levanta todo con un solo comando: `npm run local` (inicia MongoDB en memoria
+   en `127.0.0.1:27017` y Next.js) → abre `http://localhost:3000`.
+   - Alternativa en dos terminales: `npm run db` (base) y luego `npm run dev`
+     (servidor).
+   - La primera ejecución descarga el binario de MongoDB (~100 MB) una sola vez.
+3. Otros comandos: `npm run build` (build de producción), `npm run lint`
+   (revisión de código), `npm run start` (servir el build).
+4. Configuración en `.env.local` (copia de `.env.example`):
+   - `MONGODB_URI` — `mongodb://127.0.0.1:27017/encuestas` para local; la
+     cadena de Atlas para producción.
    - `AUTH_SECRET` — clave secreta de las sesiones.
+
+> **Datos en local:** el MongoDB en memoria se borra al cerrar el proceso (y se
+> vuelve a sembrar solo los tipos por defecto). Para conservar datos, apunta
+> `MONGODB_URI` a un MongoDB real o a Atlas; el código no cambia.
 
 ---
 
@@ -81,20 +90,19 @@ con uno o varios **tipos**, contiene varias **preguntas**, y recibe muchos
 
 ---
 
-## Migración futura: MongoDB Atlas (online)
+## Producción: MongoDB Atlas (online)
 
-La base de datos actual corre **localmente** en tu máquina. Más adelante se
-migrará a **MongoDB Atlas** (base de datos en la nube, gratis en su plan M0),
-para que la plataforma funcione sin depender del equipo local.
+Para producción, la base de datos vive en **MongoDB Atlas** (nube, gratis en su
+plan M0), de modo que la plataforma funcione sin depender del equipo local.
 
-**Cómo funciona la migración:** el código no cambia (Mongoose se conecta igual
-a local o a la nube). Solo hay que:
+**Cómo funciona:** el código no cambia (Mongoose se conecta igual a local o a la
+nube). Solo hay que:
 
 1. Crear la cuenta y el cluster en `cloud.mongodb.com`.
 2. Copiar la cadena de conexión que entrega Atlas.
 3. Reemplazar `MONGODB_URI` en `.env.local` por esa cadena.
 4. Listo: la app sigue trabajando igual, pero con la base en línea.
 
-> Nota: al migrar, las encuestas, usuarios y votos actuales de la base local
+> Nota: al pasar a Atlas, las encuestas, usuarios y votos de la base local
 > **no se copian automáticamente**; habría que migrar los datos si se quieren
-> conservar.
+> conservar (ver `docs/guia-despliegue.md`).

@@ -43,6 +43,7 @@ export type EncuestaListaUI = {
   preguntas: number
   votos: number
   createdAt: string
+  esPropietario?: boolean
 }
 
 export type RespuestasUI = Record<string, string | string[] | number | boolean | undefined>

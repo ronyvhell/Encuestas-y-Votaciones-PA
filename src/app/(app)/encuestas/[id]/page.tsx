@@ -5,14 +5,14 @@ import { cookies, headers } from "next/headers"
 import { connectDB } from "@/lib/db"
 import { Encuesta, Voto } from "@/lib/models"
 import { computarResultados } from "@/lib/results"
-import { hashIp } from "@/lib/ip"
+import { hashIp, obtenerIpDeHeaders } from "@/lib/ip"
 import { auth } from "@/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SurveyRender } from "@/components/survey-render"
 import { VoteForm } from "@/components/vote-form"
 import { SurveyAdmin } from "@/components/survey-admin"
-import { ArrowLeftIcon, CheckCircle2Icon } from "lucide-react"
+import { ArrowLeftIcon, CheckCircle2Icon, InfoIcon } from "lucide-react"
 import type { EncuestaUI } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
@@ -38,14 +38,16 @@ export default async function DetalleEncuestaPage({ params }: PageProps<"/encues
   const vid = cookieStore.get("vid")?.value ?? null
 
   const headerStore = await headers()
-  const forwarded = headerStore.get("x-forwarded-for")
-  const realIp = headerStore.get("x-real-ip")
-  const ip = forwarded ? forwarded.split(",")[0].trim() : (realIp ?? "desconocida")
-  const ipHash = hashIp(ip)
+  const ip = obtenerIpDeHeaders((nombre) => headerStore.get(nombre))
+  const ipHash = ip ? hashIp(ip) : ""
 
-  const yaVoto = vid
-    ? await Voto.exists({ encuestaId: encuesta._id, $or: [{ voterId: vid }, { ipHash }] })
-    : await Voto.exists({ encuestaId: encuesta._id, voterId: ipHash })
+  const duplicados: Record<string, unknown>[] = []
+  if (vid) duplicados.push({ voterId: vid })
+  if (ipHash) duplicados.push({ ipHash })
+  const yaVoto =
+    duplicados.length > 0
+      ? await Voto.exists({ encuestaId: encuesta._id, $or: duplicados })
+      : null
 
   const datos: EncuestaUI = {
     _id: encuesta._id.toString(),
@@ -92,12 +94,18 @@ export default async function DetalleEncuestaPage({ params }: PageProps<"/encues
         </div>
       )}
 
-      {yaVoto ? (
+      {yaVoto || esPropietario ? (
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-2 rounded-2xl border bg-muted/40 px-4 py-3">
-            <CheckCircle2Icon className="size-4 text-primary" />
+            {esPropietario ? (
+              <InfoIcon className="size-4 text-primary" />
+            ) : (
+              <CheckCircle2Icon className="size-4 text-primary" />
+            )}
             <p className="text-sm">
-              Ya participaste en esta encuesta. Estos son los resultados hasta ahora.
+              {esPropietario
+                ? "Eres el creador de esta encuesta, así que no puedes votar en ella. Estos son los resultados hasta ahora."
+                : "Ya participaste en esta encuesta. Estos son los resultados hasta ahora."}
             </p>
           </div>
           <SurveyRender encuesta={datos} mode="results" resultados={resultados ?? undefined} />
