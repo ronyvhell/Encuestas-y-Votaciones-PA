@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { RocketIcon, Share2Icon, Trash2Icon, Undo2Icon } from "lucide-react"
+import { DownloadIcon, FileTextIcon, RocketIcon, Share2Icon, Trash2Icon, Undo2Icon } from "lucide-react"
 
 export function SurveyAdmin({
   encuestaId,
@@ -92,6 +92,32 @@ export function SurveyAdmin({
     }
   }
 
+  async function exportar(formato: "csv" | "arff") {
+    try {
+      const res = await fetch(`/api/surveys/${encuestaId}/export?formato=${formato}`)
+      if (!res.ok) {
+        const datos = await res.json().catch(() => null)
+        sileo.warning({ title: "No se pudo exportar", description: datos?.error })
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const enlace = document.createElement("a")
+      enlace.href = url
+      enlace.download = formato === "arff" ? "datos-encuesta.arff" : "datos-encuesta.csv"
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(url)
+      sileo.success({
+        title: "Datos exportados",
+        description: formato === "arff" ? "Archivo listo para Weka." : "CSV listo para Excel o Power BI.",
+      })
+    } catch {
+      sileo.error({ title: "Error inesperado al exportar" })
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button size="sm" variant={publicada ? "outline" : "default"} onClick={cambiarEstado} disabled={cambiando}>
@@ -114,6 +140,16 @@ export function SurveyAdmin({
           Compartir
         </Button>
       )}
+
+      <Button size="sm" variant="outline" onClick={() => exportar("csv")}>
+        <DownloadIcon data-icon="inline-start" />
+        Exportar CSV
+      </Button>
+
+      <Button size="sm" variant="outline" onClick={() => exportar("arff")}>
+        <FileTextIcon data-icon="inline-start" />
+        ARFF (Weka)
+      </Button>
 
       <AlertDialog>
         <AlertDialogTrigger

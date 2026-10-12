@@ -40,6 +40,7 @@ export interface IPregunta {
   config: { min?: number; max?: number }
   requerida: boolean
   orden: number
+  clave?: string
 }
 
 const preguntaSchema = new Schema<IPregunta>(
@@ -53,6 +54,7 @@ const preguntaSchema = new Schema<IPregunta>(
     },
     requerida: { type: Boolean, default: false },
     orden: { type: Number, default: 0 },
+    clave: { type: String },
   },
   { _id: true }
 )

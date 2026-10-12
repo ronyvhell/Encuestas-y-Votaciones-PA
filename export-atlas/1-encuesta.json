@@ -1,0 +1,245 @@
+[
+  {
+    "_id": {
+      "$oid": "6acd12fc680ba85ccc212b66"
+    },
+    "titulo": "Clima y comunicación laboral",
+    "descripcion": "Encuesta de clima laboral. Datos simulados para dashboard y minería de datos.",
+    "imagenPortada": "/portada-clima-laboral.svg",
+    "tipos": [],
+    "estado": "publicada",
+    "creador": {
+      "$oid": "64f0000000000000000000aa"
+    },
+    "preguntas": [
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b5b"
+        },
+        "texto": "¿En qué área trabajas?",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "Administrativa",
+          "Operativa",
+          "Comercial",
+          "Tecnología",
+          "Talento humano"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 0,
+        "clave": "area"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b5c"
+        },
+        "texto": "¿Cuánto tiempo llevas en la empresa?",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "Menos de 1 año",
+          "1 a 3 años",
+          "3 a 5 años",
+          "Más de 5 años"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 1,
+        "clave": "antiguedad"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b5d"
+        },
+        "texto": "¿En qué rango de edad estás?",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "18 a 25",
+          "26 a 35",
+          "36 a 45",
+          "46 o más"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 2,
+        "clave": "edad"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b5e"
+        },
+        "texto": "¿Cuál es tu modalidad de trabajo?",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "Presencial",
+          "Híbrida",
+          "Remota"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 3,
+        "clave": "modalidad"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b5f"
+        },
+        "texto": "¿Qué tan clara es la comunicación con tu jefe? (1 = nada clara, 5 = muy clara)",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 4,
+        "clave": "comunicacion"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b60"
+        },
+        "texto": "¿Sientes que tu trabajo es reconocido? (1 = nunca, 5 = siempre)",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 5,
+        "clave": "reconocimiento"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b61"
+        },
+        "texto": "¿Qué tan sostenible es tu carga laboral? (1 = insostenible, 5 = muy sostenible)",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 6,
+        "clave": "carga"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b62"
+        },
+        "texto": "¿Cómo describes el ambiente de tu equipo? (1 = malo, 5 = excelente)",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 7,
+        "clave": "equipo"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b63"
+        },
+        "texto": "¿Qué tan satisfecho estás con tu salario? (1 = nada, 5 = totalmente)",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 8,
+        "clave": "salario"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b64"
+        },
+        "texto": "Recomendarías esta empresa como lugar para trabajar",
+        "tipoPregunta": "verdadero_falso",
+        "opciones": [],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 9,
+        "clave": "recomendaria"
+      },
+      {
+        "_id": {
+          "$oid": "6acd12fc680ba85ccc212b65"
+        },
+        "texto": "¿Piensas seguir en la empresa el próximo año?",
+        "tipoPregunta": "seleccion_unica",
+        "opciones": [
+          "Sí",
+          "No",
+          "No sé"
+        ],
+        "config": {
+          "min": null,
+          "max": null
+        },
+        "requerida": true,
+        "orden": 10,
+        "clave": "sigue"
+      }
+    ],
+    "votos": 420,
+    "createdAt": {
+      "$date": "2026-06-01T13:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-11T23:00:00.000Z"
+    },
+    "__v": 0,
+    "seed": true
+  }
+]

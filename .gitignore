@@ -47,3 +47,6 @@ next-env.d.ts
 
 # respaldos de mongodump
 /backup
+
+# respaldos generados por scripts/seed-encuesta.mjs
+/backups

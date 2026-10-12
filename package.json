@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "db": "node scripts/dev-db.mjs",
+    "seed": "node scripts/seed-encuesta.mjs",
     "local": "concurrently -k -n db,next \"npm:db\" \"npm:dev\"",
     "build": "next build",
     "start": "next start",
