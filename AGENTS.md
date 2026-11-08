@@ -17,6 +17,9 @@ Plataforma de encuestas y votaciones con Next.js 16 (App Router, Turbopack) + Re
 - `npm run db` — solo el MongoDB en memoria (`scripts/dev-db.mjs`, puerto 27017, datos efímeros).
 - `npm run dev` — solo el servidor Next (requiere una base ya corriendo con `npm run db` o un MongoDB real).
 - `npm run lint` — ejecuta `eslint` directamente (no existe `next lint`).
+- `npm run seed` — siembra la encuesta de clima laboral (420 votos).
+- `npm run seed:satisfaccion` — siembra la encuesta de satisfacción de compra en línea (520 votos); cada seed borra solo sus propios documentos (`seedClave`).
+- `node scripts/verificar-modelo.mjs [--encuesta=satisfaccion]` — verificación end-to-end del modelo contra la app en marcha.
 - `npm run build` / `npm run start`.
 - No hay runner de tests ni script de typecheck. Usa `npx tsc --noEmit`; los tipos globales de rutas de Next solo existen después de haber corrido `dev`/`build`.
 - En PowerShell `npm`/`npx` pueden estar bloqueados por ExecutionPolicy; usa `npm.cmd` / `npx.cmd`.
@@ -43,7 +46,7 @@ Plataforma de encuestas y votaciones con Next.js 16 (App Router, Turbopack) + Re
 
 ## Modelo predictivo
 - Solo el **creador** entrena, predice y elimina versiones: las rutas comparan `encuesta.creador` y responden 403. La página `/encuestas/[id]/modelo` hace `notFound()` si no es el dueño.
-- La variable objetivo siempre es **binaria**; `objetivosPosibles()` decide qué preguntas sirven (selección única con 2 opciones, o 3 con una opción «No sé» bajo política, o verdadero/falso).
+- La variable objetivo siempre es **binaria**; `objetivosPosibles()` decide qué preguntas sirven (selección única con 2 opciones, o 3 con una opción «No sé» bajo política, o verdadero/falso). El orden prioriza las de **selección única con 2 opciones**; un verdadero/falso se usa como predictor salvo que sea el único objetivo válido.
 - Cada entrenamiento crea un documento en `modelos` con `version` incremental; nunca sobrescribe. El artefacto serializado se guarda en `artefacto` (Mixed) junto con `columnas` para poder predecir después.
 - Las métricas se calculan con predicciones **fuera de muestra** (validación cruzada estratificada, semilla fija `20261012`); no uses métricas de entrenamiento para reportar.
 - La semilla y las particiones son deterministas: mismos datos + misma semilla = mismos resultados.

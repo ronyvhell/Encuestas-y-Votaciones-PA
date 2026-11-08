@@ -2,6 +2,7 @@
 //
 // Uso:
 //   node scripts/verificar-modelo.mjs
+//   node scripts/verificar-modelo.mjs --encuesta=satisfaccion
 //   node scripts/verificar-modelo.mjs --base=http://127.0.0.1:3000 --email=... --password=...
 //
 // Comprueba: inicio de sesión, entrenamiento, reentrenamiento (nueva versión),
@@ -13,6 +14,7 @@ const arg = (nombre, defecto) =>
 const BASE = arg("base", "http://127.0.0.1:3000")
 const EMAIL = arg("email", "admin@encuestas.local")
 const PASSWORD = arg("password", "encuestas123")
+const FILTRO_ENCUESTA = arg("encuesta", "clima")
 
 const jar = new Map()
 
@@ -82,15 +84,18 @@ async function main() {
 
   const resLista = await pedir("/api/surveys")
   const encuestas = await resLista.json()
+  const normalizar = (texto) =>
+    texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  const filtro = normalizar(FILTRO_ENCUESTA)
   const encuesta =
-    encuestas.find((item) => /clima/i.test(item.titulo)) ?? encuestas[0]
+    encuestas.find((item) => normalizar(item.titulo).includes(filtro)) ?? encuestas[0]
 
   if (!encuesta) {
     fallar("No hay encuestas publicadas en la base.")
     return
   }
-  if (!encuesta.titulo.toLowerCase().includes("clima")) {
-    console.log(`! No se encontró "Clima y comunicación laboral"; se usa "${encuesta.titulo}".`)
+  if (!normalizar(encuesta.titulo).includes(filtro)) {
+    console.log(`! No se encontró una encuesta que contenga "${FILTRO_ENCUESTA}"; se usa "${encuesta.titulo}".`)
   }
 
   const id = encuesta._id
@@ -165,30 +170,34 @@ async function main() {
     )
   }
 
-  // 3) Predicciones: perfil favorable y desfavorable
-  const porTexto = (fragmento) =>
-    detalle.preguntas.find((pregunta) =>
-      pregunta.texto.toLowerCase().includes(fragmento.toLowerCase())
-    )
-
+  // 3) Predicciones: perfil favorable y desfavorable.
+  // Es genérico: pone las escalas 1-5 y los verdadero/falso en el extremo
+  // correspondiente, y deja las preguntas nominales en su primera opción.
   function construirRespuestas(nivel) {
     const respuestas = {}
-    const asignar = (fragmento, valor, filtro) => {
-      const pregunta = porTexto(fragmento)
-      if (!pregunta) return
-      const opcion = filtro ? pregunta.opciones.find(filtro) : valor
-      if (opcion !== undefined) respuestas[pregunta._id] = opcion
+
+    for (const pregunta of detalle.preguntas) {
+      if (pregunta.tipoPregunta === "verdadero_falso") {
+        respuestas[pregunta._id] = nivel >= 4
+        continue
+      }
+
+      if (pregunta.tipoPregunta === "seleccion_unica") {
+        const opciones = pregunta.opciones ?? []
+        if (opciones.length === 0) continue
+        const numerica = opciones.every((opcion) => Number.isFinite(Number(opcion)))
+        respuestas[pregunta._id] = numerica && opciones.includes(String(nivel))
+          ? String(nivel)
+          : opciones[0]
+        continue
+      }
+
+      if (pregunta.tipoPregunta === "checklist" || pregunta.tipoPregunta === "seleccion_multiple") {
+        const opciones = pregunta.opciones ?? []
+        if (opciones.length > 0) respuestas[pregunta._id] = [opciones[0]]
+      }
     }
 
-    asignar("área", null, (o) => o === "Operativa")
-    asignar("tiempo", null, (o) => o.includes("1 a 3"))
-    asignar("edad", null, (o) => o.includes("26 a 35"))
-    asignar("modalidad", null, (o) => o === "Presencial")
-    for (const fragmento of ["comunicación", "reconocido", "carga", "ambiente", "salario"]) {
-      asignar(fragmento, String(nivel))
-    }
-    const preguntaRecomendaria = porTexto("Recomendarías")
-    if (preguntaRecomendaria) respuestas[preguntaRecomendaria._id] = nivel >= 4
     return respuestas
   }
 
@@ -259,16 +268,19 @@ async function main() {
   // 5) Exportación: ARFF sin acentos + diccionario; CSV con acentos y BOM
   const resArff = await pedir(`/api/surveys/${id}/export?formato=arff`)
   const arff = await resArff.text()
-  const atributoSigue = arff.split("\n").find((linea) => linea.startsWith("@attribute sigue"))
+  const atributos = arff.split("\n").filter((linea) => linea.startsWith("@attribute"))
+  const atributoObjetivo =
+    atributos.find((linea) => /\{No,Si\}|\{Si,No\}/.test(linea)) ??
+    atributos[atributos.length - 1]
   if (!resArff.ok) {
     fallar(`La exportación ARFF falló (status ${resArff.status}).`)
   } else {
-    console.log(`✓ ARFF: ${atributoSigue}`)
-    if (!atributoSigue || atributoSigue.includes("Sí")) {
+    console.log(`✓ ARFF: ${atributoObjetivo}`)
+    if (!atributoObjetivo || atributoObjetivo.includes("Sí")) {
       fallar("El atributo objetivo del ARFF conserva acentos.")
     }
-    if (!/\bSi\b/.test(atributoSigue ?? "")) fallar("El ARFF no contiene la etiqueta Si.")
-    if (!arff.includes("% area:")) fallar("El ARFF no incluye el diccionario de variables.")
+    if (!/\bSi\b/.test(atributoObjetivo ?? "")) fallar("El ARFF no contiene la etiqueta Si.")
+    if (!arff.includes("Diccionario de variables")) fallar("El ARFF no incluye el diccionario de variables.")
     if (!arff.includes("% Etiquetas sin acentos")) fallar("El ARFF no documenta las etiquetas sin acentos.")
   }
 

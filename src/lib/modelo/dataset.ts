@@ -84,7 +84,12 @@ export function objetivosPosibles(preguntas: PreguntaEntrada[]): ObjetivoPosible
     })
   }
 
-  return lista
+  // Las preguntas de selección única con dos opciones son un objetivo más
+  // explícito que un verdadero/falso, que suele funcionar mejor como predictor.
+  // El orden dentro de cada grupo se conserva.
+  return lista.sort((a, b) =>
+    a.tipo === b.tipo ? 0 : a.tipo === "seleccion_unica" ? -1 : 1
+  )
 }
 
 /** Busca el objetivo por id; si no se indica, devuelve el primero válido. */

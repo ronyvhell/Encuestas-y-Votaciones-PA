@@ -382,24 +382,25 @@ reproducibles):
 
 | Algoritmo | Exactitud | F1 (Sí) | Macro-F1 |
 | --- | --- | --- | --- |
-| Naive Bayes | 75 % | 76 % | 75 % |
-| Bosque aleatorio | 71 % | 72 % | 71 % |
-| **Árbol de decisión (J48)** | **70 %** | **71 %** | **69 %** |
-| k-NN (k = 5) | 65 % | 66 % | 66 % |
+| Naive Bayes | 71 % | 72 % | 71 % |
+| Bosque aleatorio | 68 % | 70 % | 67 % |
+| **Árbol de decisión (J48)** | **66 %** | **70 %** | **66 %** |
+| k-NN (k = 5) | 63 % | 65 % | 63 % |
 
 Matriz de confusión del árbol de decisión (predicciones fuera de muestra):
 
 |  | Predice «Sí» | Predice «No» |
 | --- | --- | --- |
-| **Real «Sí»** | 159 (VP) | 54 (FN) |
-| **Real «No»** | 74 (FP) | 133 (VN) |
+| **Real «Sí»** | 165 (VP) | 53 (FN) |
+| **Real «No»** | 88 (FP) | 114 (VN) |
 
 Los cuatro algoritmos **superan con claridad el 50 % del azar binario**
 (H3 confirmada). El árbol se mantiene como modelo principal por su
 interpretabilidad, y la app permite cambiar de algoritmo y comparar en vivo. El
-modelo aprende que las variables más influyentes son el **reconocimiento**
-(≈49 % de la importancia), la **comunicación** (≈41 %) y, en menor medida, la
-**carga laboral** (≈10 %), lo que coincide con el análisis exploratorio.
+modelo aprende que las variables más influyentes son la **comunicación**
+(≈41 % de la importancia), la **carga laboral** (≈28 %), el **reconocimiento**
+(≈20 %) y el **salario** (≈8,5 %), lo que coincide con el análisis exploratorio.
+La pregunta de recomendación aporta poco cuando el objetivo es la permanencia.
 
 ### 10.4 Visualización del modelo
 
@@ -450,7 +451,7 @@ se proponen los siguientes indicadores:
 ## 12. Resultados esperados
 
 1. Un **modelo clasificador binario** con exactitud claramente superior al azar
-   (50 %), sustentado en reglas interpretables: **70 % con el árbol y 75 % con
+   (50 %), sustentado en reglas interpretables: **66 % con el árbol y 71 % con
    Naive Bayes** sobre los datos del seed.
 2. Un **tablero de control** que muestre los indicadores clave del clima
    laboral.

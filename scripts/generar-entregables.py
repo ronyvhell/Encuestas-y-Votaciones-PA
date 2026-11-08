@@ -209,7 +209,7 @@ def dibujar_diagrama():
                 continue
         return ImageFont.load_default()
 
-    W, H = 1620, 1340
+    W, H = 1620, 1260
     img = Image.new("RGB", (W, H), "#ffffff")
     d = ImageDraw.Draw(img)
 
@@ -229,7 +229,14 @@ def dibujar_diagrama():
         ang = math.atan2(p2[1] - p1[1], p2[0] - p1[0])
         for da in (math.pi * 0.85, -math.pi * 0.85):
             d.line([p2, (p2[0] + 18 * math.cos(ang + da), p2[1] + 18 * math.sin(ang + da))], fill="#64748b", width=3)
-        d.text((ex, ey), etiqueta, fill="#0f172a", font=fuente(20, True))
+        # Fondo blanco detrás de la etiqueta para que la línea no la atraviese.
+        tipografia = fuente(20, True)
+        caja_texto = d.textbbox((ex, ey), etiqueta, font=tipografia)
+        d.rectangle(
+            [caja_texto[0] - 8, caja_texto[1] - 4, caja_texto[2] + 8, caja_texto[3] + 4],
+            fill="#ffffff",
+        )
+        d.text((ex, ey), etiqueta, fill="#0f172a", font=tipografia)
 
     d.text((40, 20), "Base de datos · PA Encuestas y Votaciones", fill="#0f172a", font=fuente(30, True))
 
@@ -266,9 +273,6 @@ def dibujar_diagrama():
     flecha((1380, 300), (1080, 420), "N : M  (tipos)", 1195, 340)
     flecha((700, 770), (290, 960), "1 : N  (votos)", 400, 840)
     flecha((920, 770), (1330, 880), "1 : N  (modelos)", 1030, 830)
-
-    d.text((60, 1290), "Relaciones: users.creador → encuestas y modelos (1:N)  ·  surveytypes ← encuestas.tipos (N:M)  ·  encuestas ← votos.encuestaId (1:N)  ·  encuestas ← modelos.encuestaId (1:N)  ·  encuestas → preguntas[] (embebida)",
-           fill="#475569", font=fuente(16))
 
     img.save(os.path.join(DOCS, "diagrama-base-de-datos.png"))
     return W, H

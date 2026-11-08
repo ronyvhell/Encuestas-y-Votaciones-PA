@@ -154,12 +154,12 @@ entrena, reentrena y predice). Resultado sobre los 420 votos del seed:
 | --- | --- |
 | Inicio de sesión | ✅ |
 | Encuesta encontrada con 420 votos y 11 preguntas | ✅ |
-| Modelo de árbol entrenado (versión 1) | ✅ exactitud 70 %, F1 71 %, macro-F1 69 % |
-| Matriz de confusión fuera de muestra | VP 159 · VN 133 · FP 74 · FN 54 |
-| Comparación de algoritmos | árbol 70 % · Naive Bayes 75 % · k-NN 65 % · bosque 71 % |
+| Modelo de árbol entrenado (versión 1) | ✅ exactitud 66 %, F1 70 %, macro-F1 66 % |
+| Matriz de confusión fuera de muestra | VP 165 · VN 114 · FP 88 · FN 53 |
+| Comparación de algoritmos | árbol 66 % · Naive Bayes 71 % · k-NN 63 % · bosque 68 % |
 | Reentrenamiento | ✅ crea la versión 2 |
-| Predicción de un perfil favorable | ✅ «Sí» con 92 % de probabilidad |
-| Predicción de un perfil desfavorable | ✅ «No» con 2 % de probabilidad de «Sí» |
+| Predicción de un perfil favorable | ✅ «Sí» con 93 % de probabilidad |
+| Predicción de un perfil desfavorable | ✅ «No» con 3 % de probabilidad de «Sí» |
 | Página del modelo | ✅ renderiza árbol, métricas y matriz |
 | Otras páginas (`/encuestas`, `/dashboard`, detalle) | ✅ |
 | ARFF sin acentos + diccionario | ✅ `@attribute sigue {No,Si}` |
@@ -179,6 +179,29 @@ Con credenciales distintas:
 ```powershell
 node scripts/verificar-modelo.mjs --base=http://127.0.0.1:3000 --email=tu@correo.com --password=tuclave
 ```
+
+### 3.3 Segunda encuesta de ejemplo
+
+El segundo seed (`npm run seed:satisfaccion`) carga una encuesta de satisfacción
+y experiencia de compra en línea con **520 votos y 12 preguntas**. Su
+verificación se ejecuta con:
+
+```powershell
+node scripts/verificar-modelo.mjs --encuesta=satisfaccion
+```
+
+| Comprobación | Resultado |
+| --- | --- |
+| Encuesta encontrada con 520 votos y 12 preguntas | ✅ |
+| Modelo de árbol (objetivo «¿Volverías a comprar?») | ✅ exactitud 81 %, F1 84 %, macro-F1 81 % |
+| Matriz de confusión fuera de muestra | VP 257 · VN 166 · FP 57 · FN 40 |
+| Comparación de algoritmos | árbol 81 % · Naive Bayes 80 % · k-NN 76 % · bosque 81 % |
+| Predicción de un perfil favorable y uno desfavorable | ✅ «Sí» con 86 % y «No» con 7 % |
+| ARFF sin acentos | ✅ `@attribute volveria {Si,No}` |
+
+La encuesta de satisfacción obtiene mejor exactitud que la de clima laboral
+porque su variable objetivo depende más directamente de las escalas de
+experiencia (producto, envío y recomendación).
 
 ---
 

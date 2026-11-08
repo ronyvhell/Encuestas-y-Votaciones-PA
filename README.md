@@ -79,7 +79,9 @@ En ambos casos la app queda en **http://localhost:3000**. Las colecciones se cre
 | `npm run lint`      | ESLint                                              |
 | `npx tsc --noEmit`  | Chequeo de tipos (después de haber corrido `dev`/`build`) |
 | `npm run seed`      | Siembra la encuesta de clima laboral (420 votos, 2 clases) |
+| `npm run seed:satisfaccion` | Siembra la encuesta de satisfacción de compra en línea (520 votos, 12 preguntas) |
 | `node scripts/verificar-modelo.mjs` | Prueba el modelo de punta a punta contra la app en marcha |
+| `node scripts/verificar-modelo.mjs --encuesta=satisfaccion` | Igual, con la segunda encuesta |
 | `node scripts/migrar-binario.mjs` | Convierte una encuesta antigua (Sí/No/No sé) a Sí/No |
 
 ---
@@ -190,5 +192,6 @@ del archivo. El CSV conserva los acentos y el BOM UTF-8 para Excel.
 - El creador de una encuesta no puede votar en ella; ve directamente los resultados.
 - Si una encuesta ya tiene votos, al editarla solo cambian los metadatos, no las preguntas.
 - **Modelo:** solo el creador puede entrenar, predecir y exportar; el resto recibe 403. Las versiones del modelo se guardan en la colección `modelos`.
-- **Resultados del seed:** 218 `Sí` / 202 `No`. Con el árbol J48 la exactitud es ~70 % y con Naive Bayes ~75 % (validación cruzada de 5 particiones, semilla `20261012`, reproducible).
+- **Resultados del seed de clima:** 218 `Sí` / 202 `No`. Con el árbol J48 la exactitud es ~66 % y con Naive Bayes ~71 % (validación cruzada de 5 particiones, semilla `20261012`, reproducible).
+- **Seed de satisfacción:** 520 votos, 297 `Sí` / 223 `No`; el árbol alcanza ~81 % de exactitud. Convive con el de clima (cada uno borra solo sus propios datos).
 - **Acentos:** en la app no hay que hacer nada; en los archivos exportados, el ARFF va sin acentos y el CSV/XLSX con acentos y BOM.
