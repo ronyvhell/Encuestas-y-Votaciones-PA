@@ -1,0 +1,458 @@
+@relation clima_y_comunicacion_laboral
+
+% Diccionario de variables (texto original de la encuesta)
+% area: ¿En qué área trabajas?
+% antiguedad: ¿Cuánto tiempo llevas en la empresa?
+% edad: ¿En qué rango de edad estás?
+% modalidad: ¿Cuál es tu modalidad de trabajo?
+% comunicacion: ¿Qué tan clara es la comunicación con tu jefe? (1 = nada clara, 5 = muy clara)
+% reconocimiento: ¿Sientes que tu trabajo es reconocido? (1 = nunca, 5 = siempre)
+% carga: ¿Qué tan sostenible es tu carga laboral? (1 = insostenible, 5 = muy sostenible)
+% equipo: ¿Cómo describes el ambiente de tu equipo? (1 = malo, 5 = excelente)
+% salario: ¿Qué tan satisfecho estás con tu salario? (1 = nada, 5 = totalmente)
+% recomendaria: Recomendarías esta empresa como lugar para trabajar
+% sigue: ¿Piensas seguir en la empresa el próximo año?
+%
+% Etiquetas sin acentos para que Weka las lea en cualquier configuracion
+% area: "Tecnología" -> "Tecnologia"
+% antiguedad: "Menos de 1 año" -> "Menos de 1 ano"
+% antiguedad: "1 a 3 años" -> "1 a 3 anos"
+% antiguedad: "3 a 5 años" -> "3 a 5 anos"
+% antiguedad: "Más de 5 años" -> "Mas de 5 anos"
+% edad: "46 o más" -> "46 o mas"
+% modalidad: "Híbrida" -> "Hibrida"
+% sigue: "Sí" -> "Si"
+
+@attribute area {Operativa,Administrativa,'Talento humano',Comercial,Tecnologia}
+@attribute antiguedad {'Menos de 1 ano','1 a 3 anos','3 a 5 anos','Mas de 5 anos'}
+@attribute edad {'26 a 35','18 a 25','36 a 45','46 o mas'}
+@attribute modalidad {Presencial,Hibrida,Remota}
+@attribute comunicacion numeric
+@attribute reconocimiento numeric
+@attribute carga numeric
+@attribute equipo numeric
+@attribute salario numeric
+@attribute recomendaria {false,true}
+@attribute sigue {No,Si}
+
+@data
+Operativa,'Menos de 1 ano','26 a 35',Presencial,3,2,2,4,1,false,No
+Administrativa,'1 a 3 anos','18 a 25',Presencial,3,3,2,4,4,false,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,1,3,3,4,3,false,Si
+Operativa,'3 a 5 anos','36 a 45',Presencial,2,2,2,3,3,false,Si
+Administrativa,'Mas de 5 anos','18 a 25',Presencial,3,3,3,4,4,false,No
+Administrativa,'1 a 3 anos','46 o mas',Hibrida,2,2,2,2,3,false,No
+'Talento humano','3 a 5 anos','18 a 25',Hibrida,3,1,3,3,4,false,No
+'Talento humano','1 a 3 anos','36 a 45',Presencial,4,4,4,5,4,true,No
+Comercial,'Menos de 1 ano','46 o mas',Remota,5,4,4,5,4,true,Si
+Operativa,'Mas de 5 anos','46 o mas',Hibrida,2,2,2,3,3,false,No
+Administrativa,'3 a 5 anos','18 a 25',Presencial,3,2,1,4,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,3,2,1,3,2,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,4,4,2,3,4,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,2,2,2,1,2,false,No
+Comercial,'Mas de 5 anos','36 a 45',Hibrida,4,4,3,3,3,true,Si
+Tecnologia,'Menos de 1 ano','46 o mas',Presencial,4,3,3,4,2,true,Si
+Comercial,'Mas de 5 anos','26 a 35',Presencial,2,3,2,2,3,false,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,3,4,3,4,2,true,Si
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,4,3,3,4,4,true,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,3,3,3,3,3,false,Si
+Comercial,'1 a 3 anos','18 a 25',Hibrida,3,3,2,2,4,false,No
+Comercial,'Menos de 1 ano','26 a 35',Hibrida,4,3,4,3,5,true,Si
+'Talento humano','1 a 3 anos','18 a 25',Presencial,3,3,3,4,3,false,Si
+Administrativa,'3 a 5 anos','18 a 25',Hibrida,4,4,3,3,3,true,Si
+Tecnologia,'1 a 3 anos','18 a 25',Presencial,3,4,4,3,5,true,Si
+Tecnologia,'Mas de 5 anos','26 a 35',Presencial,1,2,3,2,2,false,No
+Operativa,'1 a 3 anos','36 a 45',Presencial,2,2,2,1,2,true,No
+Tecnologia,'1 a 3 anos','36 a 45',Presencial,2,3,2,4,2,false,Si
+Tecnologia,'Menos de 1 ano','18 a 25',Presencial,4,4,3,4,3,true,No
+Operativa,'3 a 5 anos','26 a 35',Presencial,1,2,1,3,2,false,No
+Comercial,'Mas de 5 anos','46 o mas',Hibrida,3,3,3,2,2,true,Si
+Administrativa,'Menos de 1 ano','18 a 25',Presencial,2,3,2,4,4,false,No
+Comercial,'1 a 3 anos','26 a 35',Hibrida,3,3,2,2,3,false,Si
+Operativa,'3 a 5 anos','26 a 35',Presencial,2,2,1,3,3,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Presencial,3,4,3,3,4,true,Si
+Operativa,'Menos de 1 ano','46 o mas',Hibrida,4,2,2,5,2,false,Si
+Operativa,'3 a 5 anos','18 a 25',Hibrida,3,2,2,3,3,false,No
+'Talento humano','1 a 3 anos','26 a 35',Presencial,2,3,4,4,3,false,Si
+Comercial,'3 a 5 anos','36 a 45',Presencial,3,3,4,3,4,true,Si
+Administrativa,'3 a 5 anos','36 a 45',Hibrida,3,4,3,3,4,false,Si
+Comercial,'Mas de 5 anos','26 a 35',Presencial,5,5,5,5,4,true,Si
+'Talento humano','3 a 5 anos','46 o mas',Hibrida,3,2,4,4,3,false,Si
+Tecnologia,'1 a 3 anos','26 a 35',Presencial,5,3,5,4,3,true,Si
+Operativa,'Menos de 1 ano','18 a 25',Presencial,1,1,2,2,2,false,No
+Comercial,'1 a 3 anos','36 a 45',Remota,1,3,4,3,3,false,No
+Operativa,'1 a 3 anos','36 a 45',Presencial,3,3,3,2,3,false,Si
+Operativa,'Menos de 1 ano','26 a 35',Hibrida,2,3,2,2,2,false,No
+Operativa,'Menos de 1 ano','26 a 35',Remota,3,3,2,2,4,true,No
+Operativa,'3 a 5 anos','18 a 25',Presencial,4,4,2,4,3,true,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,4,4,3,5,3,true,Si
+Operativa,'1 a 3 anos','36 a 45',Presencial,3,2,2,3,3,true,No
+Operativa,'1 a 3 anos','26 a 35',Hibrida,5,4,3,3,3,true,Si
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,2,2,3,3,1,false,No
+Tecnologia,'3 a 5 anos','36 a 45',Presencial,4,3,3,5,3,true,No
+Administrativa,'Menos de 1 ano','18 a 25',Remota,4,2,4,3,1,false,No
+Comercial,'1 a 3 anos','26 a 35',Presencial,1,2,3,2,4,false,No
+Administrativa,'1 a 3 anos','36 a 45',Remota,3,4,3,4,3,false,No
+Tecnologia,'Mas de 5 anos','26 a 35',Hibrida,2,2,1,3,3,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,1,3,2,2,3,false,No
+Comercial,'3 a 5 anos','46 o mas',Hibrida,3,3,2,3,3,true,No
+Operativa,'1 a 3 anos','36 a 45',Presencial,2,3,3,3,2,true,No
+Tecnologia,'3 a 5 anos','26 a 35',Presencial,5,5,3,3,3,true,No
+Comercial,'3 a 5 anos','26 a 35',Remota,4,2,3,3,4,true,Si
+Operativa,'Mas de 5 anos','46 o mas',Hibrida,4,4,3,4,3,true,Si
+Tecnologia,'3 a 5 anos','36 a 45',Presencial,1,3,3,2,2,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,4,4,2,4,4,true,Si
+Comercial,'3 a 5 anos','18 a 25',Hibrida,4,3,2,2,3,true,Si
+Tecnologia,'Mas de 5 anos','26 a 35',Hibrida,5,3,3,3,2,true,No
+Administrativa,'1 a 3 anos','36 a 45',Presencial,1,3,3,2,2,false,No
+Comercial,'3 a 5 anos','26 a 35',Hibrida,2,3,2,2,3,false,No
+'Talento humano','Mas de 5 anos','36 a 45',Hibrida,4,2,4,3,4,true,Si
+Administrativa,'Menos de 1 ano','36 a 45',Presencial,4,3,4,3,3,false,Si
+Comercial,'Mas de 5 anos','46 o mas',Remota,3,3,3,3,3,true,Si
+Administrativa,'Mas de 5 anos','36 a 45',Presencial,4,5,3,4,3,true,Si
+Operativa,'Menos de 1 ano','36 a 45',Presencial,2,2,2,3,2,false,No
+Tecnologia,'3 a 5 anos','18 a 25',Hibrida,1,1,1,1,1,false,No
+Comercial,'1 a 3 anos','18 a 25',Presencial,2,3,2,3,3,true,No
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,1,2,3,2,2,false,No
+Comercial,'3 a 5 anos','26 a 35',Presencial,3,3,2,4,2,false,No
+Administrativa,'Mas de 5 anos','26 a 35',Presencial,2,2,1,2,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Remota,2,4,4,2,3,false,No
+Comercial,'3 a 5 anos','26 a 35',Hibrida,3,3,2,3,3,false,Si
+Operativa,'3 a 5 anos','36 a 45',Remota,2,2,2,2,3,false,No
+Operativa,'1 a 3 anos','36 a 45',Remota,2,2,2,3,3,true,No
+'Talento humano','3 a 5 anos','36 a 45',Hibrida,3,4,3,3,4,true,No
+Comercial,'Menos de 1 ano','46 o mas',Presencial,5,4,3,4,4,true,Si
+Comercial,'Mas de 5 anos','18 a 25',Hibrida,1,1,3,2,2,false,No
+Operativa,'Mas de 5 anos','26 a 35',Presencial,2,2,4,3,3,false,Si
+Administrativa,'Menos de 1 ano','18 a 25',Presencial,5,4,4,5,4,true,Si
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,5,5,4,5,5,true,Si
+Administrativa,'1 a 3 anos','18 a 25',Hibrida,1,2,3,1,4,false,Si
+Comercial,'Menos de 1 ano','18 a 25',Presencial,2,4,3,3,4,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,2,1,2,2,3,false,No
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,3,3,3,3,1,false,Si
+Administrativa,'1 a 3 anos','18 a 25',Remota,4,4,4,3,3,false,Si
+Comercial,'Menos de 1 ano','26 a 35',Presencial,1,1,3,1,2,false,No
+Administrativa,'Menos de 1 ano','46 o mas',Presencial,3,3,3,3,4,true,Si
+Comercial,'Menos de 1 ano','18 a 25',Presencial,3,4,3,2,2,true,Si
+Tecnologia,'3 a 5 anos','18 a 25',Remota,1,3,3,3,4,false,No
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,2,3,3,3,2,true,Si
+Operativa,'1 a 3 anos','26 a 35',Presencial,2,3,3,4,3,false,No
+Operativa,'1 a 3 anos','36 a 45',Hibrida,2,2,2,2,2,false,No
+'Talento humano','3 a 5 anos','46 o mas',Hibrida,3,3,2,1,3,true,Si
+Administrativa,'1 a 3 anos','36 a 45',Presencial,2,3,2,3,4,false,No
+Comercial,'1 a 3 anos','18 a 25',Presencial,3,3,3,3,2,false,No
+Comercial,'Menos de 1 ano','26 a 35',Presencial,3,3,4,4,3,false,Si
+Comercial,'3 a 5 anos','36 a 45',Hibrida,3,4,3,4,3,true,No
+Comercial,'3 a 5 anos','26 a 35',Presencial,5,5,4,5,5,true,Si
+Comercial,'Mas de 5 anos','36 a 45',Presencial,3,4,3,3,4,true,No
+Administrativa,'Menos de 1 ano','46 o mas',Presencial,1,2,2,2,3,false,No
+Operativa,'1 a 3 anos','18 a 25',Hibrida,3,3,2,4,3,false,Si
+Operativa,'Menos de 1 ano','26 a 35',Hibrida,4,4,4,3,3,true,Si
+Operativa,'Mas de 5 anos','26 a 35',Presencial,1,2,2,2,4,false,Si
+Administrativa,'Menos de 1 ano','36 a 45',Hibrida,4,3,3,3,2,false,Si
+Tecnologia,'3 a 5 anos','18 a 25',Presencial,2,2,3,3,3,true,No
+Comercial,'Mas de 5 anos','26 a 35',Presencial,2,3,4,3,3,true,Si
+Tecnologia,'1 a 3 anos','26 a 35',Hibrida,5,5,4,5,4,true,Si
+'Talento humano','Mas de 5 anos','36 a 45',Presencial,4,4,3,3,3,true,Si
+Comercial,'Mas de 5 anos','36 a 45',Remota,3,5,4,4,4,true,Si
+Comercial,'3 a 5 anos','36 a 45',Presencial,2,2,2,2,3,false,No
+Operativa,'Menos de 1 ano','36 a 45',Remota,3,4,3,3,3,true,Si
+Administrativa,'1 a 3 anos','46 o mas',Remota,4,3,3,3,3,true,No
+Administrativa,'Menos de 1 ano','36 a 45',Presencial,4,4,2,3,3,false,Si
+Operativa,'Mas de 5 anos','18 a 25',Hibrida,1,2,2,3,3,false,No
+Comercial,'1 a 3 anos','46 o mas',Presencial,1,2,1,2,1,false,No
+'Talento humano','Menos de 1 ano','26 a 35',Remota,2,3,3,1,3,true,Si
+Administrativa,'3 a 5 anos','36 a 45',Presencial,3,3,2,4,3,false,Si
+Administrativa,'Menos de 1 ano','18 a 25',Presencial,1,2,3,1,3,false,No
+Operativa,'Menos de 1 ano','36 a 45',Presencial,5,4,3,4,4,true,Si
+Operativa,'1 a 3 anos','46 o mas',Presencial,3,3,2,3,2,false,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,3,3,2,3,3,false,Si
+Operativa,'3 a 5 anos','36 a 45',Hibrida,4,5,3,5,4,true,Si
+Administrativa,'Mas de 5 anos','18 a 25',Remota,3,2,3,4,4,false,No
+Comercial,'Mas de 5 anos','36 a 45',Remota,3,4,3,3,3,true,No
+Tecnologia,'Menos de 1 ano','46 o mas',Presencial,3,3,3,3,2,true,No
+Operativa,'1 a 3 anos','18 a 25',Hibrida,3,3,3,5,3,true,No
+Administrativa,'Menos de 1 ano','36 a 45',Hibrida,3,4,4,2,1,true,Si
+Operativa,'Mas de 5 anos','26 a 35',Presencial,3,3,3,3,3,false,Si
+Operativa,'3 a 5 anos','18 a 25',Presencial,3,3,3,2,3,true,Si
+Administrativa,'Menos de 1 ano','36 a 45',Hibrida,2,1,4,2,3,false,No
+Administrativa,'Mas de 5 anos','26 a 35',Remota,3,4,4,3,2,true,Si
+Comercial,'1 a 3 anos','26 a 35',Presencial,2,2,3,2,3,true,Si
+Operativa,'Mas de 5 anos','36 a 45',Hibrida,4,4,3,4,3,false,No
+Administrativa,'1 a 3 anos','26 a 35',Remota,5,3,3,4,4,true,Si
+Tecnologia,'1 a 3 anos','26 a 35',Hibrida,4,3,3,2,3,true,No
+Comercial,'Menos de 1 ano','26 a 35',Presencial,4,5,3,4,4,true,Si
+Operativa,'1 a 3 anos','36 a 45',Presencial,1,2,1,2,2,false,No
+Comercial,'1 a 3 anos','26 a 35',Presencial,4,5,4,5,3,true,No
+Operativa,'3 a 5 anos','36 a 45',Remota,3,3,3,3,2,false,No
+Operativa,'1 a 3 anos','18 a 25',Hibrida,3,2,3,5,3,true,No
+Tecnologia,'1 a 3 anos','18 a 25',Presencial,4,5,4,4,4,true,Si
+Operativa,'Menos de 1 ano','36 a 45',Hibrida,4,4,3,4,4,true,Si
+Operativa,'3 a 5 anos','46 o mas',Hibrida,2,1,1,3,2,false,No
+Administrativa,'3 a 5 anos','36 a 45',Hibrida,5,5,3,4,5,true,Si
+Operativa,'3 a 5 anos','18 a 25',Presencial,4,3,3,5,4,true,Si
+'Talento humano','3 a 5 anos','18 a 25',Presencial,3,3,3,3,3,false,No
+'Talento humano','Menos de 1 ano','18 a 25',Presencial,2,2,2,2,2,false,No
+Administrativa,'3 a 5 anos','18 a 25',Presencial,3,3,3,2,4,true,Si
+Administrativa,'Menos de 1 ano','46 o mas',Hibrida,3,4,3,4,3,true,Si
+Comercial,'1 a 3 anos','26 a 35',Remota,4,4,3,4,3,true,Si
+Tecnologia,'3 a 5 anos','26 a 35',Remota,2,3,4,2,3,false,No
+Administrativa,'Mas de 5 anos','18 a 25',Remota,4,3,3,4,3,false,Si
+Tecnologia,'1 a 3 anos','36 a 45',Presencial,4,3,3,2,2,false,No
+Operativa,'Menos de 1 ano','36 a 45',Presencial,3,4,2,3,3,true,No
+Comercial,'Menos de 1 ano','36 a 45',Hibrida,4,4,3,4,3,true,Si
+Administrativa,'3 a 5 anos','26 a 35',Presencial,3,2,3,5,4,true,Si
+'Talento humano','1 a 3 anos','18 a 25',Remota,3,2,3,3,3,true,Si
+'Talento humano','Menos de 1 ano','18 a 25',Presencial,3,3,3,3,3,true,No
+Operativa,'3 a 5 anos','26 a 35',Hibrida,1,1,2,2,2,false,No
+Operativa,'Menos de 1 ano','36 a 45',Presencial,4,3,2,5,2,true,Si
+Comercial,'1 a 3 anos','26 a 35',Presencial,1,2,2,3,2,false,No
+'Talento humano','3 a 5 anos','36 a 45',Hibrida,3,3,2,4,4,true,Si
+Administrativa,'Mas de 5 anos','18 a 25',Hibrida,2,3,4,3,3,true,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,4,5,4,4,3,true,Si
+Administrativa,'Menos de 1 ano','36 a 45',Hibrida,2,4,1,4,4,false,No
+Tecnologia,'3 a 5 anos','26 a 35',Hibrida,2,2,4,2,3,true,No
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,5,4,4,4,3,true,Si
+Operativa,'3 a 5 anos','26 a 35',Presencial,3,3,3,4,3,true,Si
+Comercial,'3 a 5 anos','36 a 45',Remota,5,4,4,4,3,true,Si
+Administrativa,'Mas de 5 anos','46 o mas',Hibrida,4,4,3,5,4,true,Si
+Administrativa,'1 a 3 anos','18 a 25',Hibrida,3,3,2,2,2,true,Si
+Administrativa,'Mas de 5 anos','26 a 35',Presencial,3,4,3,3,3,true,No
+Comercial,'Menos de 1 ano','18 a 25',Hibrida,3,2,3,2,3,false,No
+Tecnologia,'3 a 5 anos','46 o mas',Presencial,3,4,2,4,3,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,4,5,3,4,3,true,Si
+Operativa,'Menos de 1 ano','18 a 25',Presencial,2,3,2,2,2,false,Si
+'Talento humano','1 a 3 anos','26 a 35',Hibrida,4,3,2,3,3,false,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,4,3,4,4,false,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,4,3,4,4,3,true,Si
+Comercial,'1 a 3 anos','18 a 25',Hibrida,2,1,3,1,2,false,No
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,5,5,5,5,3,true,Si
+Tecnologia,'1 a 3 anos','18 a 25',Hibrida,4,4,2,3,3,true,Si
+'Talento humano','3 a 5 anos','36 a 45',Remota,3,3,2,2,3,false,No
+Tecnologia,'1 a 3 anos','18 a 25',Remota,2,2,4,3,3,false,Si
+Administrativa,'1 a 3 anos','46 o mas',Presencial,4,4,5,2,4,true,Si
+'Talento humano','1 a 3 anos','26 a 35',Hibrida,1,3,3,3,3,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Presencial,3,3,3,3,2,true,Si
+Operativa,'3 a 5 anos','18 a 25',Presencial,2,2,1,2,3,false,Si
+Comercial,'Menos de 1 ano','18 a 25',Hibrida,1,3,3,3,4,false,No
+Tecnologia,'Mas de 5 anos','46 o mas',Remota,3,4,3,3,3,false,No
+Comercial,'Mas de 5 anos','46 o mas',Hibrida,3,5,3,2,3,true,Si
+Administrativa,'3 a 5 anos','46 o mas',Remota,4,3,4,3,2,true,Si
+'Talento humano','3 a 5 anos','18 a 25',Presencial,1,3,3,3,3,false,No
+Administrativa,'1 a 3 anos','26 a 35',Remota,4,2,3,4,4,false,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,3,2,3,5,3,true,No
+Operativa,'Mas de 5 anos','26 a 35',Presencial,3,3,1,4,3,false,Si
+Tecnologia,'1 a 3 anos','46 o mas',Hibrida,4,3,4,2,4,false,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,1,1,4,2,2,false,Si
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,4,4,5,4,4,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,1,1,2,2,2,false,No
+Operativa,'Menos de 1 ano','36 a 45',Hibrida,4,2,2,2,2,false,No
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,3,3,3,4,4,false,Si
+Administrativa,'Menos de 1 ano','26 a 35',Hibrida,2,1,1,3,4,false,No
+Comercial,'3 a 5 anos','36 a 45',Presencial,4,5,4,5,3,true,Si
+Tecnologia,'1 a 3 anos','36 a 45',Remota,3,2,3,4,3,true,Si
+Comercial,'3 a 5 anos','46 o mas',Hibrida,4,4,4,5,4,true,Si
+Tecnologia,'1 a 3 anos','36 a 45',Hibrida,5,3,3,4,3,true,Si
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,2,3,3,2,1,true,No
+Tecnologia,'3 a 5 anos','36 a 45',Hibrida,3,4,4,4,3,true,Si
+Comercial,'1 a 3 anos','26 a 35',Remota,4,4,4,2,4,false,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,3,3,4,3,false,No
+Administrativa,'3 a 5 anos','26 a 35',Presencial,4,4,3,3,3,true,Si
+Comercial,'Menos de 1 ano','18 a 25',Hibrida,4,2,3,2,3,false,No
+Comercial,'1 a 3 anos','36 a 45',Presencial,4,3,3,4,4,false,Si
+Comercial,'1 a 3 anos','46 o mas',Presencial,2,3,2,4,4,false,Si
+Comercial,'Menos de 1 ano','26 a 35',Remota,2,3,3,4,3,false,No
+Operativa,'Menos de 1 ano','36 a 45',Remota,2,3,1,4,3,false,No
+Administrativa,'1 a 3 anos','26 a 35',Hibrida,2,2,3,3,3,false,No
+Comercial,'3 a 5 anos','18 a 25',Presencial,3,2,3,3,3,false,Si
+Operativa,'Menos de 1 ano','36 a 45',Hibrida,4,3,3,3,2,true,No
+Operativa,'Menos de 1 ano','26 a 35',Presencial,4,5,2,4,3,false,No
+Administrativa,'1 a 3 anos','26 a 35',Presencial,2,2,2,3,2,false,No
+Administrativa,'1 a 3 anos','18 a 25',Hibrida,3,3,2,3,2,false,No
+Administrativa,'Menos de 1 ano','36 a 45',Presencial,3,3,2,3,3,false,No
+Comercial,'Menos de 1 ano','26 a 35',Hibrida,5,4,4,3,4,true,Si
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,4,3,2,3,3,false,No
+Comercial,'Mas de 5 anos','36 a 45',Presencial,4,4,3,4,4,true,No
+Operativa,'1 a 3 anos','18 a 25',Presencial,3,3,2,4,3,false,Si
+'Talento humano','Menos de 1 ano','26 a 35',Hibrida,3,3,2,3,2,false,No
+Operativa,'Mas de 5 anos','18 a 25',Hibrida,1,4,1,1,2,false,No
+Tecnologia,'1 a 3 anos','46 o mas',Remota,3,4,4,3,2,true,No
+Tecnologia,'1 a 3 anos','26 a 35',Presencial,4,4,3,4,3,true,Si
+Comercial,'1 a 3 anos','26 a 35',Remota,2,3,3,3,4,true,Si
+Operativa,'Menos de 1 ano','36 a 45',Remota,2,4,3,3,2,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Presencial,4,3,3,3,4,true,No
+Comercial,'Menos de 1 ano','26 a 35',Hibrida,1,2,2,1,1,false,No
+Administrativa,'3 a 5 anos','26 a 35',Presencial,3,2,2,3,3,false,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,5,3,4,3,4,true,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,4,5,3,4,4,true,No
+Operativa,'3 a 5 anos','26 a 35',Remota,4,3,3,4,4,false,Si
+Operativa,'1 a 3 anos','36 a 45',Presencial,4,3,3,3,3,true,Si
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,3,2,2,1,3,false,No
+Operativa,'Menos de 1 ano','46 o mas',Hibrida,1,1,3,3,3,false,No
+Operativa,'Menos de 1 ano','18 a 25',Remota,3,2,2,4,2,false,No
+Operativa,'Menos de 1 ano','18 a 25',Presencial,2,2,2,4,2,true,No
+Comercial,'Mas de 5 anos','26 a 35',Hibrida,4,5,4,4,4,true,Si
+Tecnologia,'1 a 3 anos','18 a 25',Presencial,4,3,3,2,3,true,Si
+'Talento humano','Mas de 5 anos','26 a 35',Presencial,4,2,5,5,4,true,Si
+Tecnologia,'Mas de 5 anos','18 a 25',Remota,4,3,4,3,3,true,No
+Administrativa,'Mas de 5 anos','18 a 25',Remota,2,4,4,4,3,true,Si
+Tecnologia,'1 a 3 anos','46 o mas',Hibrida,4,4,4,3,3,true,Si
+Operativa,'Mas de 5 anos','26 a 35',Presencial,1,3,3,3,2,false,No
+Operativa,'Menos de 1 ano','26 a 35',Remota,4,5,2,3,4,true,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,2,2,2,2,2,false,No
+'Talento humano','1 a 3 anos','18 a 25',Presencial,3,2,3,4,2,true,No
+Tecnologia,'Menos de 1 ano','26 a 35',Remota,5,5,5,5,4,true,Si
+Comercial,'3 a 5 anos','18 a 25',Remota,3,3,4,4,4,true,No
+Administrativa,'3 a 5 anos','46 o mas',Presencial,1,1,2,3,3,false,No
+'Talento humano','Menos de 1 ano','46 o mas',Presencial,1,1,2,1,2,false,No
+Tecnologia,'1 a 3 anos','26 a 35',Presencial,5,5,3,5,5,true,No
+Operativa,'1 a 3 anos','18 a 25',Presencial,3,4,2,4,5,true,Si
+Administrativa,'1 a 3 anos','36 a 45',Remota,4,4,4,3,3,true,No
+Tecnologia,'Menos de 1 ano','26 a 35',Presencial,3,2,3,5,3,true,No
+Administrativa,'Mas de 5 anos','26 a 35',Presencial,1,3,3,3,2,false,No
+Administrativa,'1 a 3 anos','26 a 35',Presencial,2,2,4,2,4,true,Si
+Comercial,'Menos de 1 ano','26 a 35',Hibrida,4,5,3,4,5,true,Si
+Administrativa,'Mas de 5 anos','36 a 45',Hibrida,3,4,2,4,4,false,Si
+Tecnologia,'1 a 3 anos','46 o mas',Presencial,3,4,4,4,4,true,Si
+Comercial,'Menos de 1 ano','36 a 45',Presencial,4,4,4,3,3,true,Si
+Administrativa,'3 a 5 anos','36 a 45',Presencial,3,4,4,3,3,true,Si
+'Talento humano','Menos de 1 ano','46 o mas',Remota,3,1,2,3,4,false,Si
+'Talento humano','Mas de 5 anos','26 a 35',Presencial,2,3,4,4,3,false,Si
+Tecnologia,'Menos de 1 ano','18 a 25',Presencial,1,2,4,2,3,false,No
+Comercial,'Mas de 5 anos','36 a 45',Hibrida,3,3,3,2,4,true,Si
+Operativa,'1 a 3 anos','36 a 45',Remota,3,3,2,4,3,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,4,4,3,4,5,true,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,4,4,2,4,3,true,Si
+Administrativa,'Mas de 5 anos','46 o mas',Presencial,2,3,3,5,2,false,No
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,2,1,3,3,2,false,Si
+Administrativa,'Menos de 1 ano','18 a 25',Presencial,4,4,4,4,4,true,No
+'Talento humano','3 a 5 anos','46 o mas',Presencial,2,2,2,1,2,false,No
+Administrativa,'Mas de 5 anos','18 a 25',Remota,4,4,3,5,3,true,Si
+Comercial,'Mas de 5 anos','26 a 35',Presencial,5,4,4,3,5,true,Si
+Tecnologia,'3 a 5 anos','26 a 35',Hibrida,2,3,4,3,3,true,Si
+Operativa,'Mas de 5 anos','46 o mas',Remota,3,2,2,2,2,false,Si
+'Talento humano','Menos de 1 ano','18 a 25',Presencial,3,3,4,4,3,true,No
+Administrativa,'Mas de 5 anos','26 a 35',Hibrida,5,5,5,5,5,false,Si
+Operativa,'1 a 3 anos','26 a 35',Hibrida,2,3,2,2,4,true,No
+Operativa,'Menos de 1 ano','18 a 25',Presencial,2,3,2,3,3,false,Si
+Administrativa,'1 a 3 anos','26 a 35',Presencial,4,4,2,4,3,true,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,3,4,3,3,true,No
+Comercial,'Menos de 1 ano','26 a 35',Presencial,3,4,4,3,4,true,Si
+Operativa,'1 a 3 anos','26 a 35',Remota,4,4,2,2,4,false,Si
+Administrativa,'Menos de 1 ano','26 a 35',Remota,3,2,2,2,3,false,No
+Operativa,'3 a 5 anos','26 a 35',Presencial,4,2,1,3,4,true,Si
+Operativa,'Menos de 1 ano','26 a 35',Presencial,3,4,3,3,3,false,Si
+Administrativa,'3 a 5 anos','18 a 25',Hibrida,4,4,2,4,3,false,No
+Comercial,'3 a 5 anos','18 a 25',Remota,2,3,3,2,3,false,Si
+Administrativa,'1 a 3 anos','46 o mas',Presencial,2,2,3,3,1,true,No
+Administrativa,'1 a 3 anos','46 o mas',Presencial,4,4,4,5,5,true,Si
+Administrativa,'Mas de 5 anos','36 a 45',Hibrida,3,4,3,2,2,false,Si
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,5,3,4,5,5,true,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,3,4,3,4,3,true,Si
+Comercial,'3 a 5 anos','36 a 45',Presencial,5,5,3,3,4,true,Si
+Operativa,'1 a 3 anos','46 o mas',Remota,4,3,2,4,3,true,No
+Tecnologia,'1 a 3 anos','18 a 25',Hibrida,2,1,2,2,3,false,No
+Administrativa,'Mas de 5 anos','46 o mas',Presencial,2,2,3,2,2,false,No
+'Talento humano','1 a 3 anos','26 a 35',Hibrida,3,3,3,3,3,true,No
+Operativa,'1 a 3 anos','26 a 35',Hibrida,2,1,1,1,2,false,No
+'Talento humano','1 a 3 anos','36 a 45',Hibrida,2,4,3,4,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,5,5,2,5,3,false,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,2,4,4,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Hibrida,3,2,2,3,2,false,No
+Comercial,'Menos de 1 ano','36 a 45',Hibrida,3,3,2,3,2,false,No
+Administrativa,'Mas de 5 anos','26 a 35',Presencial,5,5,4,4,4,true,No
+Tecnologia,'Mas de 5 anos','36 a 45',Hibrida,1,4,3,3,2,false,No
+Operativa,'Menos de 1 ano','36 a 45',Hibrida,2,3,1,3,5,false,No
+Tecnologia,'3 a 5 anos','18 a 25',Presencial,4,3,4,4,4,true,Si
+Comercial,'Menos de 1 ano','18 a 25',Presencial,2,3,3,3,3,false,No
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,2,3,4,2,3,true,Si
+Comercial,'1 a 3 anos','18 a 25',Remota,3,2,3,4,3,true,Si
+Tecnologia,'1 a 3 anos','26 a 35',Hibrida,3,4,3,3,4,false,Si
+Operativa,'Menos de 1 ano','26 a 35',Presencial,2,1,1,3,3,false,No
+Operativa,'Menos de 1 ano','18 a 25',Hibrida,3,4,3,4,2,true,Si
+Administrativa,'3 a 5 anos','18 a 25',Hibrida,4,3,2,3,3,true,Si
+Comercial,'1 a 3 anos','36 a 45',Presencial,3,4,4,4,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Presencial,2,2,2,2,2,false,Si
+Operativa,'3 a 5 anos','46 o mas',Hibrida,5,3,2,2,4,false,Si
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,5,3,3,4,2,true,No
+Comercial,'3 a 5 anos','18 a 25',Presencial,1,3,3,3,3,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Remota,3,2,3,2,3,false,No
+Comercial,'Mas de 5 anos','18 a 25',Remota,3,3,3,3,3,true,Si
+Comercial,'Menos de 1 ano','26 a 35',Hibrida,3,4,3,4,3,true,Si
+Comercial,'1 a 3 anos','26 a 35',Hibrida,3,2,3,3,1,true,No
+Comercial,'1 a 3 anos','26 a 35',Hibrida,3,3,3,2,3,false,No
+Tecnologia,'3 a 5 anos','26 a 35',Remota,3,3,3,1,3,false,No
+'Talento humano','1 a 3 anos','26 a 35',Hibrida,3,4,3,3,3,false,Si
+'Talento humano','3 a 5 anos','18 a 25',Hibrida,5,5,3,4,5,true,No
+Operativa,'3 a 5 anos','26 a 35',Remota,4,4,2,4,3,false,No
+Administrativa,'Menos de 1 ano','18 a 25',Presencial,2,4,2,5,4,false,Si
+Operativa,'3 a 5 anos','36 a 45',Hibrida,3,2,2,2,4,true,Si
+Administrativa,'1 a 3 anos','18 a 25',Presencial,2,2,4,4,3,false,No
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,3,4,4,3,3,true,No
+'Talento humano','Menos de 1 ano','18 a 25',Remota,3,3,3,2,2,true,No
+Comercial,'Mas de 5 anos','18 a 25',Remota,4,4,4,2,2,true,Si
+Administrativa,'Mas de 5 anos','46 o mas',Presencial,4,3,3,3,3,true,Si
+Operativa,'1 a 3 anos','26 a 35',Presencial,3,4,3,3,2,true,Si
+'Talento humano','1 a 3 anos','18 a 25',Presencial,2,2,3,2,2,false,No
+Operativa,'1 a 3 anos','36 a 45',Hibrida,3,2,2,2,2,true,No
+Comercial,'Menos de 1 ano','36 a 45',Remota,1,3,2,3,1,false,No
+Administrativa,'3 a 5 anos','18 a 25',Presencial,5,4,2,4,4,true,Si
+Administrativa,'3 a 5 anos','18 a 25',Presencial,3,2,2,2,2,true,No
+Administrativa,'3 a 5 anos','26 a 35',Hibrida,4,3,2,4,4,false,Si
+'Talento humano','Menos de 1 ano','26 a 35',Remota,3,4,3,2,3,false,No
+Tecnologia,'Menos de 1 ano','26 a 35',Presencial,2,2,2,3,3,false,No
+Operativa,'Menos de 1 ano','18 a 25',Remota,4,4,3,5,2,true,Si
+Comercial,'Menos de 1 ano','18 a 25',Presencial,4,4,4,4,4,true,Si
+'Talento humano','Menos de 1 ano','26 a 35',Presencial,2,2,3,3,2,false,No
+Operativa,'Mas de 5 anos','18 a 25',Presencial,3,4,3,5,3,true,Si
+Administrativa,'3 a 5 anos','18 a 25',Presencial,3,3,3,2,2,false,No
+Operativa,'1 a 3 anos','36 a 45',Presencial,3,4,3,3,4,false,Si
+Operativa,'Menos de 1 ano','18 a 25',Hibrida,2,1,3,3,3,false,No
+Comercial,'1 a 3 anos','18 a 25',Presencial,1,1,3,4,2,false,No
+Administrativa,'Menos de 1 ano','26 a 35',Presencial,3,3,4,3,3,false,Si
+Operativa,'1 a 3 anos','18 a 25',Remota,3,4,3,3,3,false,Si
+Administrativa,'Mas de 5 anos','36 a 45',Hibrida,3,5,3,4,3,true,Si
+Comercial,'Menos de 1 ano','18 a 25',Hibrida,3,5,4,4,4,true,Si
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,4,3,5,3,true,No
+Operativa,'3 a 5 anos','26 a 35',Hibrida,2,2,2,2,3,false,No
+Administrativa,'Mas de 5 anos','18 a 25',Hibrida,4,3,4,3,4,true,Si
+Tecnologia,'Mas de 5 anos','26 a 35',Hibrida,2,3,3,3,3,true,Si
+Administrativa,'Mas de 5 anos','18 a 25',Presencial,3,2,2,3,3,false,No
+Comercial,'1 a 3 anos','36 a 45',Presencial,3,3,2,3,3,true,No
+Tecnologia,'1 a 3 anos','18 a 25',Remota,2,5,4,4,2,true,No
+Comercial,'Menos de 1 ano','26 a 35',Remota,3,4,3,3,4,false,No
+Comercial,'1 a 3 anos','26 a 35',Hibrida,4,3,4,3,3,true,Si
+Tecnologia,'Menos de 1 ano','18 a 25',Presencial,3,3,3,3,2,false,Si
+Operativa,'3 a 5 anos','36 a 45',Remota,3,3,3,3,3,false,No
+'Talento humano','Menos de 1 ano','18 a 25',Presencial,4,3,3,3,4,true,No
+Operativa,'Menos de 1 ano','26 a 35',Presencial,1,1,2,4,2,false,No
+Tecnologia,'Mas de 5 anos','26 a 35',Remota,3,3,3,4,3,true,Si
+'Talento humano','3 a 5 anos','36 a 45',Presencial,3,3,4,3,3,true,Si
+Comercial,'1 a 3 anos','18 a 25',Presencial,3,4,3,4,3,true,No
+Operativa,'Mas de 5 anos','18 a 25',Remota,3,2,3,1,3,true,No
+Operativa,'Menos de 1 ano','26 a 35',Hibrida,1,3,3,3,4,false,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,3,2,3,3,3,false,No
+Operativa,'Menos de 1 ano','18 a 25',Presencial,1,2,1,5,2,true,No
+Operativa,'Mas de 5 anos','26 a 35',Hibrida,3,2,3,3,2,true,No
+Operativa,'1 a 3 anos','26 a 35',Presencial,4,4,2,2,2,false,Si
+'Talento humano','Menos de 1 ano','46 o mas',Presencial,1,1,4,2,2,false,No
+Operativa,'1 a 3 anos','18 a 25',Hibrida,5,4,1,4,4,true,No
+Comercial,'Menos de 1 ano','26 a 35',Remota,3,3,4,2,2,true,Si
+Administrativa,'1 a 3 anos','46 o mas',Presencial,1,1,2,2,2,false,No
+Comercial,'1 a 3 anos','26 a 35',Remota,3,3,2,2,2,true,No
+Operativa,'Menos de 1 ano','26 a 35',Hibrida,5,3,2,3,3,true,Si
+'Talento humano','Menos de 1 ano','46 o mas',Hibrida,4,3,3,4,3,false,Si
+Administrativa,'Mas de 5 anos','26 a 35',Hibrida,1,1,3,3,2,false,No
+Tecnologia,'Mas de 5 anos','26 a 35',Presencial,4,4,2,5,2,true,Si
+Administrativa,'Menos de 1 ano','36 a 45',Presencial,2,4,3,5,3,false,Si
+'Talento humano','Mas de 5 anos','46 o mas',Remota,3,2,2,3,1,false,Si
+Administrativa,'Mas de 5 anos','26 a 35',Hibrida,4,3,3,3,3,false,Si
+Administrativa,'1 a 3 anos','18 a 25',Presencial,5,4,3,3,2,true,Si
+Administrativa,'Menos de 1 ano','18 a 25',Hibrida,5,5,2,5,4,true,Si
+Comercial,'1 a 3 anos','26 a 35',Presencial,3,4,4,5,4,true,Si
+Tecnologia,'3 a 5 anos','18 a 25',Presencial,3,4,3,4,3,true,No
+'Talento humano','Mas de 5 anos','18 a 25',Presencial,2,3,2,3,3,false,No
+Operativa,'Menos de 1 ano','26 a 35',Hibrida,5,5,2,5,5,true,Si
+Administrativa,'3 a 5 anos','18 a 25',Hibrida,2,2,2,2,2,false,No
+Operativa,'Mas de 5 anos','26 a 35',Hibrida,1,3,3,2,2,true,No
+Operativa,'Menos de 1 ano','26 a 35',Presencial,2,3,1,2,1,true,No

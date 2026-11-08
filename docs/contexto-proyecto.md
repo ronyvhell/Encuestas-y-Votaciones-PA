@@ -4,6 +4,8 @@
 
 Una plataforma web para **crear encuestas breves**, publicarlas y permitir que
 cualquier persona las responda (con un límite de **un voto por dispositivo/IP**).
+Además incluye un **modelo predictivo que se entrena, se visualiza y se
+reentrena dentro de la propia aplicación**.
 
 Incluye:
 
@@ -14,6 +16,13 @@ Incluye:
 - Estado **borrador / publicada** con publicación en 1 clic.
 - Grilla de encuestas con búsqueda en tiempo real.
 - Resultados de votación con barras de progreso.
+- Análisis de **todos los factores** de la encuesta (promedios, distribución y
+  porcentaje de la clase positiva por grupo).
+- **Modelo predictivo binario** entrenado en la app, con comparación de
+  algoritmos, árbol de decisión, reglas, matriz de confusión y simulador.
+- **Reentrenamiento con los votos actuales**, conservando el historial de
+  versiones.
+- Exportación de datos a CSV y ARFF (Weka) solo para el creador.
 - Tema claro/oscuro que sigue al sistema (con botón para alternar).
 - Notificaciones (toasts) para todas las acciones.
 
@@ -30,6 +39,10 @@ Incluye:
 - **MongoDB** vía **Mongoose 9** como capa de acceso a datos. En desarrollo se
   levanta **en memoria** con `mongodb-memory-server` (no hay que instalar
   MongoDB; los datos son efímeros). En producción se usa MongoDB Atlas.
+- **Motor de minería de datos propio** (`src/lib/modelo/`) en TypeScript puro:
+  árbol de decisión J48, Naive Bayes, k-NN y bosque aleatorio, con validación
+  cruzada estratificada. Sin dependencias nativas ni servicios externos, por lo
+  que funciona en Vercel.
 
 ---
 
@@ -56,7 +69,7 @@ Incluye:
 
 ## Base de datos (estructura explicada)
 
-La base se llama `encuestas` y guarda **4 colecciones** relacionadas entre sí:
+La base se llama `encuestas` y guarda **5 colecciones** relacionadas entre sí:
 
 - **`users` (Usuarios)** — las cuentas de la plataforma: nombre, correo
   (único) y contraseña cifrada.
@@ -70,10 +83,13 @@ La base se llama `encuestas` y guarda **4 colecciones** relacionadas entre sí:
 - **`votos` (Votos/Respuestas)** — cada respuesta enviada a una encuesta,
   con un identificador del votante (cookie o huella de IP) que **evita votar
   dos veces**, y las respuestas a cada pregunta.
+- **`modelos` (Modelos predictivos)** — una **versión por entrenamiento**:
+  algoritmo, métricas, matriz de confusión, variables, reglas y el artefacto
+  serializado con el que se predicen casos nuevos.
 
 **Relaciones:** una encuesta pertenece a un **usuario** (creador), se clasifica
-con uno o varios **tipos**, contiene varias **preguntas**, y recibe muchos
-**votos**.
+con uno o varios **tipos**, contiene varias **preguntas**, recibe muchos
+**votos** y puede tener varias **versiones de modelo**.
 
 ---
 
@@ -81,12 +97,36 @@ con uno o varios **tipos**, contiene varias **preguntas**, y recibe muchos
 
 - `src/app` — las páginas y la API:
   - Páginas: `/encuestas` (grilla), `/encuestas/nueva` (crear),
-    `/encuestas/[id]` (detalle/votar), `/dashboard`, `/login`, `/registro`.
+    `/encuestas/[id]` (detalle/votar), `/encuestas/[id]/modelo` (modelo
+    predictivo), `/dashboard`, `/login`, `/registro`.
   - API: `/api/auth/*` (login, registro), `/api/surveys` (encuestas),
-    `/api/surveys/[id]/vote` (votación), `/api/survey-types` (tipos),
+    `/api/surveys/[id]/vote` (votación), `/api/surveys/[id]/modelo` (entrenar
+    y consultar), `/api/surveys/[id]/modelo/predecir` (predicción),
+    `/api/surveys/[id]/export` (CSV/ARFF), `/api/survey-types` (tipos),
     `/api/upload` (imágenes de portada).
 - `src/components` — piezas de interfaz (reutilizables) y componentes UI.
+- `src/components/modelo` — panel del modelo: árbol, simulador, análisis de
+  factores.
 - `src/lib` — conexión a la base de datos, modelos, constantes y utilidades.
+- `src/lib/modelo` — motor de minería de datos: dataset, árbol J48, Naive Bayes,
+  k-NN, bosque, métricas, predicción y entrenamiento.
+
+---
+
+## Modelo predictivo (dentro de la app)
+
+- **Acceso:** creador de la encuesta → botón **Modelo predictivo** (o
+  `/encuestas/[id]/modelo`). La API responde 403 a cualquier otro usuario.
+- **Variable objetivo:** se elige entre las preguntas que producen **dos
+  clases** (selección única con dos opciones, o verdadero/falso). Si la pregunta
+  tiene «No sé», se decide si excluir esos votos o contarlos como la clase
+  negativa.
+- **Entrenamiento:** validación cruzada estratificada (5 particiones) y
+  comparación de 4 algoritmos; el artefacto final se entrena con todos los votos.
+- **Visualización:** métricas, matriz de confusión, árbol navegable, reglas
+  `SI … ENTONCES …`, importancia de variables, ejemplos reales y simulador.
+- **Reentrenamiento:** cada ejecución guarda una **versión nueva**; el historial
+  conserva las anteriores con sus métricas.
 
 ---
 

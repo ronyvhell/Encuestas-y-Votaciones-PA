@@ -1,10 +1,11 @@
 # PA — Encuestas y Votaciones
 
-Plataforma para crear encuestas, publicarlas y votar en ellas.
+Plataforma para crear encuestas, publicarlas y votar en ellas. Incluye un
+**modelo predictivo que se entrena y se reentrena dentro de la propia app**.
 
 - **Stack:** Next.js 16 (App Router, Turbopack) + React 19, MongoDB vía Mongoose, Auth.js v5.
 - **Producción:** Vercel (branch `master`) + MongoDB Atlas.
-- **Colecciones:** `users`, `surveytypes`, `encuestas`, `votos` (base `encuestas`).
+- **Colecciones:** `users`, `surveytypes`, `encuestas`, `votos`, `modelos` (base `encuestas`).
 
 ---
 
@@ -77,6 +78,9 @@ En ambos casos la app queda en **http://localhost:3000**. Las colecciones se cre
 | `npm run start`     | Sirve el build de producción                        |
 | `npm run lint`      | ESLint                                              |
 | `npx tsc --noEmit`  | Chequeo de tipos (después de haber corrido `dev`/`build`) |
+| `npm run seed`      | Siembra la encuesta de clima laboral (420 votos, 2 clases) |
+| `node scripts/verificar-modelo.mjs` | Prueba el modelo de punta a punta contra la app en marcha |
+| `node scripts/migrar-binario.mjs` | Convierte una encuesta antigua (Sí/No/No sé) a Sí/No |
 
 ---
 
@@ -149,9 +153,42 @@ Más detalle en [`docs/guia-despliegue.md`](docs/guia-despliegue.md).
 
 ---
 
-## 5. Notas
+## 5. Modelo predictivo (en la app)
+
+La plataforma **entrena su propio clasificador** con los votos de una encuesta,
+sin depender de Weka ni de un servicio externo.
+
+1. Inicia sesión como **creador** de la encuesta y entra a la encuesta.
+2. Pulsa **Modelo predictivo** (o abre `/encuestas/[id]/modelo`).
+3. Elige la **variable objetivo** (una pregunta con dos opciones, por ejemplo
+   `Sí` / `No`), el **algoritmo** y qué hacer con los votos «No sé».
+4. Pulsa **Entrenar modelo**. Verás exactitud, F1, macro-F1, matriz de
+   confusión, la comparación de los 4 algoritmos y el **árbol de decisión** con
+   sus reglas.
+5. En **Predicción** puedes simular respuestas y cargar **casos reales** del
+   conjunto de datos.
+6. Cada vez que pulses **Reentrenar con los votos actuales** se crea una
+   **versión nueva**; el historial conserva las anteriores con sus métricas.
+7. En **Factores** se analizan todas las preguntas (promedios, distribución y
+   % de la clase positiva por grupo).
+
+La variable objetivo es siempre **binaria**: el seed genera `Sí` / `No`, y si una
+encuesta antigua conserva «No sé» la app permite excluir esos votos o contarlos
+como la clase negativa (o migrarla con `scripts/migrar-binario.mjs`).
+
+**Exportación a Weka:** el CSV y el ARFF siguen disponibles desde la misma
+pantalla. El ARFF lleva las etiquetas **sin acentos** (`Si`, `No`) para que Weka
+las lea en cualquier configuración; el texto original queda en comentarios `%`
+del archivo. El CSV conserva los acentos y el BOM UTF-8 para Excel.
+
+---
+
+## 6. Notas
 
 - **Portadas subidas:** se guardan en `public/uploads/`, que en Vercel es efímero (se pierden en cada deploy). En producción usa una **URL de imagen** como portada.
 - **Votos duplicados:** se evitan con una cookie `vid` + IP hasheada; en local la IP loopback se ignora, así que solo aplica la cookie.
 - El creador de una encuesta no puede votar en ella; ve directamente los resultados.
 - Si una encuesta ya tiene votos, al editarla solo cambian los metadatos, no las preguntas.
+- **Modelo:** solo el creador puede entrenar, predecir y exportar; el resto recibe 403. Las versiones del modelo se guardan en la colección `modelos`.
+- **Resultados del seed:** 218 `Sí` / 202 `No`. Con el árbol J48 la exactitud es ~70 % y con Naive Bayes ~75 % (validación cruzada de 5 particiones, semilla `20261012`, reproducible).
+- **Acentos:** en la app no hay que hacer nada; en los archivos exportados, el ARFF va sin acentos y el CSV/XLSX con acentos y BOM.

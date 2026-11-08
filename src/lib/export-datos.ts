@@ -24,6 +24,15 @@ function normalizar(texto: string): string {
     .replace(/^_+|_+$/g, "")
 }
 
+/**
+ * Quita tildes y diéresis conservando el resto del texto.
+ * Las etiquetas del ARFF van sin acentos para que Weka las lea con cualquier
+ * configuración regional; el texto original queda en los comentarios `%`.
+ */
+export function sinAcentos(texto: string): string {
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+}
+
 export function slugTitulo(titulo: string): string {
   const slug = normalizar(titulo).split("_").filter(Boolean).join("_")
   return slug || "encuesta"
@@ -54,11 +63,19 @@ export function aplanarVotos(
 ): { columnas: ColumnaExport[]; filas: FilaExport[] } {
   const ordenadas = [...preguntas].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 
-  const definiciones = ordenadas.map((pregunta, indice) => ({
-    pregunta,
-    encabezado: encabezadoPregunta(pregunta, indice),
-    tipo: tipoColumna(pregunta),
-  }))
+  // Encabezados únicos: dos preguntas pueden normalizarse al mismo slug.
+  const usados = new Set<string>(["fecha"])
+  const definiciones = ordenadas.map((pregunta, indice) => {
+    const base = encabezadoPregunta(pregunta, indice)
+    let encabezado = base
+    let sufijo = 2
+    while (usados.has(encabezado)) {
+      encabezado = `${base}_${sufijo}`
+      sufijo += 1
+    }
+    usados.add(encabezado)
+    return { pregunta, encabezado, tipo: tipoColumna(pregunta) }
+  })
 
   // La fecha del voto es útil para el tablero (series de tiempo); Weka la ignora.
   const columnas: ColumnaExport[] = [
@@ -138,13 +155,35 @@ export function generarArff(titulo: string, columnas: ColumnaExport[], filas: Fi
 
   lineas.push(`@relation ${slugTitulo(titulo)}`)
   lineas.push("")
+
+  // Diccionario legible: Weka ignora las líneas que empiezan por "%", pero el
+  // texto original (con acentos) queda documentado en el propio archivo.
+  lineas.push("% Diccionario de variables (texto original de la encuesta)")
+  for (const col of columnasMineras) {
+    if (col.texto) lineas.push(`% ${col.encabezado}: ${col.texto}`)
+  }
+
+  const traducciones: string[] = []
+  for (const col of columnasMineras) {
+    for (const valor of col.valores ?? []) {
+      const limpio = sinAcentos(valor)
+      if (limpio !== valor) traducciones.push(`% ${col.encabezado}: "${valor}" -> "${limpio}"`)
+    }
+  }
+  if (traducciones.length > 0) {
+    lineas.push("%")
+    lineas.push("% Etiquetas sin acentos para que Weka las lea en cualquier configuración")
+    lineas.push(...traducciones)
+  }
+  lineas.push("")
+
   for (const col of columnasMineras) {
     if (col.tipo === "numerico") {
       lineas.push(`@attribute ${col.encabezado} numeric`)
     } else if (col.tipo === "texto") {
       lineas.push(`@attribute ${col.encabezado} string`)
     } else {
-      const valores = (col.valores ?? []).map(arffEtiqueta).join(",")
+      const valores = (col.valores ?? []).map((valor) => arffEtiqueta(sinAcentos(valor))).join(",")
       lineas.push(`@attribute ${col.encabezado} {${valores}}`)
     }
   }
@@ -158,8 +197,7 @@ export function generarArff(titulo: string, columnas: ColumnaExport[], filas: Fi
           const valor = fila[col.encabezado]
           if (valor === "" || valor == null) return "?"
           if (col.tipo === "numerico") return String(valor)
-          if (col.tipo === "texto") return `'${String(valor).replace(/'/g, "\\'")}'`
-          return arffEtiqueta(String(valor))
+          return arffEtiqueta(sinAcentos(String(valor)))
         })
         .join(",")
     )

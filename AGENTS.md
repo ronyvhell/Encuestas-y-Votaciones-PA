@@ -31,13 +31,22 @@ Plataforma de encuestas y votaciones con Next.js 16 (App Router, Turbopack) + Re
 - El bloque `nextjs-agent-rules` de arriba lo reescribe `next dev`; no lo elimines.
 
 ## Arquitectura
-- `src/app` App Router: grupos `(app)` (shell con sidebar), `(auth)` (login/registro), `(crear)` (flujo de creación y edición `/encuestas/[id]/editar`); páginas bajo `/encuestas`, `/dashboard`.
-- `src/app/api/*`: `surveys` (GET/POST/DELETE masivo), `surveys/[id]` (GET/PATCH contenido y estado/DELETE), `surveys/[id]/vote`, `survey-types`, `upload`, `auth/*`.
+- `src/app` App Router: grupos `(app)` (shell con sidebar), `(auth)` (login/registro), `(crear)` (flujo de creación y edición `/encuestas/[id]/editar`); páginas bajo `/encuestas`, `/encuestas/[id]/modelo`, `/dashboard`.
+- `src/app/api/*`: `surveys` (GET/POST/DELETE masivo), `surveys/[id]` (GET/PATCH contenido y estado/DELETE), `surveys/[id]/vote`, `surveys/[id]/modelo` (GET/POST/DELETE), `surveys/[id]/modelo/predecir`, `surveys/[id]/export`, `survey-types`, `upload`, `auth/*`.
 - `src/lib/db.ts` exporta `connectDB()` con caché — llámalo al inicio de cada handler que toque la base de datos.
-- `src/lib/models.ts` usa el patrón `models.X ?? model(...)` para sobrevivir al hot reload.
+- `src/lib/models.ts` usa el patrón `models.X ?? model(...)` para sobrevivir al hot reload. Colecciones: `User`, `SurveyType`, `Encuesta`, `Voto`, `Modelo`.
 - `src/lib/constants.ts` (`TIPOS_PREGUNTA`, `esTipoConOpciones`) es la única fuente de verdad de los tipos de pregunta, compartida por la validación de la API y la UI.
 - `src/lib/encuesta-input.ts` (`parseEncuestaInput`) centraliza la validación/parseo del cuerpo de una encuesta; lo usan el POST de `surveys` y el PATCH de `surveys/[id]`.
 - `src/auth.ts` contiene la configuración de NextAuth; usa `auth()` en server components y handlers.
+- `src/lib/modelo/*` es el motor de minería de datos en TypeScript puro (sin Mongoose ni dependencias nativas, así que también se puede importar desde componentes cliente): `dataset.ts` (matriz tabular y binarización de la variable objetivo), `arbol.ts` (J48 con razón de ganancia y poda), `bayes.ts`, `knn.ts`, `bosque.ts`, `metricas.ts` (validación cruzada y métricas), `entrenar.ts` (orquestador), `prediccion.ts`, `analisis.ts` (factores) y `serializar.ts`/`pagina.ts` para la UI.
+- `src/components/modelo/*`: panel del modelo (`modelo-panel.tsx`), árbol (`arbol-vista.tsx`), simulador (`simulador.tsx`) y análisis de factores (`factores-analisis.tsx`).
+
+## Modelo predictivo
+- Solo el **creador** entrena, predice y elimina versiones: las rutas comparan `encuesta.creador` y responden 403. La página `/encuestas/[id]/modelo` hace `notFound()` si no es el dueño.
+- La variable objetivo siempre es **binaria**; `objetivosPosibles()` decide qué preguntas sirven (selección única con 2 opciones, o 3 con una opción «No sé» bajo política, o verdadero/falso).
+- Cada entrenamiento crea un documento en `modelos` con `version` incremental; nunca sobrescribe. El artefacto serializado se guarda en `artefacto` (Mixed) junto con `columnas` para poder predecir después.
+- Las métricas se calculan con predicciones **fuera de muestra** (validación cruzada estratificada, semilla fija `20261012`); no uses métricas de entrenamiento para reportar.
+- La semilla y las particiones son deterministas: mismos datos + misma semilla = mismos resultados.
 
 ## Convenciones y trampas
 - La UI es shadcn/ui sobre **Base UI** (`@base-ui/react`), estilo `base-rhea`, no Radix. Usa la skill `shadcn` al agregar componentes.

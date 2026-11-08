@@ -50,8 +50,17 @@ def _es_numero(s):
         return False
 
 
+def sin_acentos(texto):
+    """Quita tildes y diéresis (las etiquetas del ARFF van sin acentos)."""
+    import unicodedata
+    return "".join(
+        ch for ch in unicodedata.normalize("NFD", str(texto))
+        if unicodedata.category(ch) != "Mn"
+    )
+
+
 def arff_etiqueta(v):
-    s = str(v)
+    s = sin_acentos(str(v))
     if all(c.isalnum() or c in "_.-" for c in s):
         return s
     return "'" + s.replace("'", "\\'") + "'"
@@ -60,12 +69,18 @@ def arff_etiqueta(v):
 def preparar():
     encuesta, votos = cargar()
 
-    # 1) Añade `clave` a cada pregunta (por su `orden`) y reescribe el JSON de Atlas.
+    # 1) Añade `clave` a cada pregunta (por su `orden`) y reescribe el JSON de Atlas
+    #    solo si realmente cambió (así no se toca el archivo en cada ejecución).
     preguntas = sorted(encuesta["preguntas"], key=lambda p: p.get("orden", 0))
+    cambios = False
     for p in preguntas:
-        p["clave"] = CLAVES[p.get("orden", 0)]
-    json.dump([encuesta], open(os.path.join(ATLAS, "1-encuesta.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=2)
+        clave = CLAVES[p.get("orden", 0)]
+        if p.get("clave") != clave:
+            p["clave"] = clave
+            cambios = True
+    if cambios:
+        json.dump([encuesta], open(os.path.join(ATLAS, "1-encuesta.json"), "w", encoding="utf-8"),
+                  ensure_ascii=False, indent=2)
 
     # Mapa preguntaId -> (clave, tipo, texto)
     meta = {}
@@ -121,6 +136,25 @@ def escribir_arff(titulo, columnas, filas, nominales):
         return t or "encuesta"
 
     L = [f"@relation {slug(titulo)}", ""]
+    # Weka ignora los comentarios "%"; sirven de diccionario con el texto original.
+    L.append("% Diccionario de variables (texto original de la encuesta)")
+    for clave, _tipo, texto in columnas:
+        L.append(f"% {clave}: {texto}")
+
+    traducciones = []
+    for clave, tipo, _texto in columnas:
+        if tipo != "nominal":
+            continue
+        for valor in nominales[clave]:
+            limpio = sin_acentos(valor)
+            if limpio != valor:
+                traducciones.append(f'% {clave}: "{valor}" -> "{limpio}"')
+    if traducciones:
+        L.append("%")
+        L.append("% Etiquetas sin acentos para que Weka las lea en cualquier configuracion")
+        L.extend(traducciones)
+
+    L.append("")
     for clave, tipo, _texto in columnas:
         if tipo == "numerico":
             L.append(f"@attribute {clave} numeric")
@@ -175,7 +209,7 @@ def dibujar_diagrama():
                 continue
         return ImageFont.load_default()
 
-    W, H = 1620, 1240
+    W, H = 1620, 1340
     img = Image.new("RGB", (W, H), "#ffffff")
     d = ImageDraw.Draw(img)
 
@@ -199,14 +233,14 @@ def dibujar_diagrama():
 
     d.text((40, 20), "Base de datos · PA Encuestas y Votaciones", fill="#0f172a", font=fuente(30, True))
 
-    caja(60, 90, 360, 250, "users", [
+    caja(60, 90, 360, 220, "users", [
         "_id", "nombre", "email (único)", "passwordHash (bcrypt)",
         "createdAt / updatedAt",
     ], "#2563eb")
     caja(1200, 90, 360, 210, "surveytypes", [
         "_id", "nombre (único)", "descripcion", "createdAt / updatedAt",
     ], "#7c3aed")
-    caja(560, 430, 500, 400, "encuestas", [
+    caja(560, 380, 500, 390, "encuestas", [
         "_id", "titulo · descripcion", "imagenPortada",
         "tipos[]  → surveytypes", "creador → users",
         "estado (borrador|publicada)", "votos (contador)",
@@ -215,18 +249,26 @@ def dibujar_diagrama():
         "   config · requerida · orden · clave",
         "createdAt / updatedAt",
     ], "#0f766e")
-    caja(560, 950, 500, 230, "votos", [
+    caja(60, 960, 460, 240, "votos", [
         "_id", "encuestaId → encuestas", "voterId (único por encuesta)",
         "ipHash", "respuestas[]: preguntaId · valor",
         "createdAt / updatedAt",
     ], "#dc2626")
+    caja(1100, 880, 460, 350, "modelos", [
+        "_id", "encuestaId → encuestas", "creador → users",
+        "version · algoritmo · politica", "preguntaObjetivoId · clases[]",
+        "clasePositiva · nRegistros", "exactitud · f1 · macroF1",
+        "matriz · comparacion[] · importancias[]",
+        "columnas[] · artefacto (árbol)", "createdAt / updatedAt",
+    ], "#b45309")
 
-    flecha((420, 210), (560, 520), "1 : N  (creador)", 380, 360)
-    flecha((1380, 300), (1080, 430), "N : M  (tipos)", 1220, 350)
-    flecha((790, 830), (790, 950), "1 : N  (encuestaId)", 820, 900)
+    flecha((420, 200), (560, 470), "1 : N  (creador)", 340, 330)
+    flecha((1380, 300), (1080, 420), "N : M  (tipos)", 1195, 340)
+    flecha((700, 770), (290, 960), "1 : N  (votos)", 400, 840)
+    flecha((920, 770), (1330, 880), "1 : N  (modelos)", 1030, 830)
 
-    d.text((60, 1180), "Relaciones: users.creador → encuestas (1:N)   ·   surveytypes ← encuestas.tipos (N:M)   ·   encuestas ← votos.encuestaId (1:N)   ·   encuestas → preguntas[] (embebida 1:N)",
-           fill="#475569", font=fuente(18))
+    d.text((60, 1290), "Relaciones: users.creador → encuestas y modelos (1:N)  ·  surveytypes ← encuestas.tipos (N:M)  ·  encuestas ← votos.encuestaId (1:N)  ·  encuestas ← modelos.encuestaId (1:N)  ·  encuestas → preguntas[] (embebida)",
+           fill="#475569", font=fuente(16))
 
     img.save(os.path.join(DOCS, "diagrama-base-de-datos.png"))
     return W, H

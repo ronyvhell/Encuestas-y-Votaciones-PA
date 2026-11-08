@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { sileo } from "sileo"
 
 import { Button } from "@/components/ui/button"
@@ -17,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { DownloadIcon, FileTextIcon, RocketIcon, Share2Icon, Trash2Icon, Undo2Icon } from "lucide-react"
+import { DownloadIcon, FileTextIcon, BrainIcon, RocketIcon, Share2Icon, Trash2Icon, Undo2Icon } from "lucide-react"
 
 export function SurveyAdmin({
   encuestaId,
@@ -140,6 +141,16 @@ export function SurveyAdmin({
           Compartir
         </Button>
       )}
+
+      <Button
+        size="sm"
+        variant="outline"
+        nativeButton={false}
+        render={<Link href={`/encuestas/${encuestaId}/modelo`} />}
+      >
+        <BrainIcon data-icon="inline-start" />
+        Modelo predictivo
+      </Button>
 
       <Button size="sm" variant="outline" onClick={() => exportar("csv")}>
         <DownloadIcon data-icon="inline-start" />

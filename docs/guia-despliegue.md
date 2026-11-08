@@ -148,6 +148,10 @@ automáticamente. Para migrarlos (si los quieres conservar):
 2. Crea una encuesta (borrador), publícala y respóndela desde otra pestaña en
    modo incógnito (verás el bloqueo de doble voto por IP).
 3. Abre la consola de Atlas → **Browse Collections** en la base `encuestas` y
-   confirma que aparecen `users`, `surveytypes`, `encuestas` y `votos`.
+   confirma que aparecen `users`, `surveytypes`, `encuestas`, `votos` y
+   `modelos`.
 4. Prueba el botón **Compartir** de una encuesta publicada (copia el link y
    ábrelo en incógnito).
+5. Entra a la encuesta como creador → **Modelo predictivo** → **Entrenar
+   modelo**. El entrenamiento corre en la propia función de Vercel (no necesita
+   ningún servicio externo) y deja la primera versión en la colección `modelos`.

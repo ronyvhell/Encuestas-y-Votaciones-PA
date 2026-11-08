@@ -1,6 +1,6 @@
 # Diagrama de la Base de Datos — PA Encuestas y Votaciones
 
-Base de datos **`encuestas`** (MongoDB, vía Mongoose). Son **4 colecciones**; las
+Base de datos **`encuestas`** (MongoDB, vía Mongoose). Son **5 colecciones**; las
 preguntas y las respuestas están **embebidas** dentro de sus documentos padre
 (no son colecciones aparte).
 
@@ -9,8 +9,10 @@ preguntas y las respuestas están **embebidas** dentro de sus documentos padre
 ```mermaid
 erDiagram
     USERS ||--o{ ENCUESTAS : "crea (creador)"
+    USERS ||--o{ MODELOS : "entrena (creador)"
     SURVEYTYPES ||--o{ ENCUESTAS : "clasifica (tipos)"
     ENCUESTAS ||--o{ VOTOS : "recibe (encuestaId)"
+    ENCUESTAS ||--o{ MODELOS : "se entrena (encuestaId)"
     ENCUESTAS ||--o{ PREGUNTAS : "contiene (embebidas)"
 
     USERS {
@@ -57,6 +59,29 @@ erDiagram
         string voterId "único por encuesta"
         string ipHash "SHA-256"
         Respuesta[] respuestas "embebidas"
+        date createdAt
+        date updatedAt
+    }
+    MODELOS {
+        ObjectId _id PK
+        ObjectId encuestaId "→ encuestas"
+        ObjectId creador "→ users"
+        number version
+        string algoritmo
+        string politica
+        string preguntaObjetivoId
+        string[] clases "2 clases"
+        string clasePositiva
+        number nRegistros
+        number exactitud
+        number f1
+        number macroF1
+        object matriz "VP|VN|FP|FN"
+        object[] comparacion "métricas por algoritmo"
+        object[] columnas "variables del modelo"
+        object[] importancias
+        object[] reglas
+        object artefacto "árbol serializado"
         date createdAt
         date updatedAt
     }
@@ -118,12 +143,36 @@ erDiagram
 | `respuestas` | Respuesta[] | **embebidas**: `{ preguntaId, valor }` |
 | `createdAt` / `updatedAt` | date | timestamps |
 
+### `modelos` — modelos predictivos entrenados
+| Campo | Tipo | Notas |
+| --- | --- | --- |
+| `_id` | ObjectId | clave primaria |
+| `encuestaId` | ObjectId | referencia a `encuestas` |
+| `creador` | ObjectId | referencia a `users` (solo él entrena y predice) |
+| `version` | number | 1, 2, 3… por encuesta (reentrenar crea otra) |
+| `algoritmo` | string | `arbol` \| `naive_bayes` \| `knn` \| `bosque` |
+| `politica` | string | `excluir` \| `mapear_no` (qué hacer con «No sé») |
+| `preguntaObjetivoId` | string | pregunta usada como variable objetivo |
+| `clases` | string[] | siempre **dos** clases |
+| `clasePositiva` | string | clase que se quiere predecir (p. ej. «Sí») |
+| `nRegistros` / `nExcluidos` | number | filas usadas y descartadas |
+| `exactitud`, `precision`, `exhaustividad`, `f1`, `macroF1` | number | métricas fuera de muestra |
+| `matriz` | object | matriz de confusión `{vp, vn, fp, fn}` |
+| `comparacion` | object[] | métricas de los 4 algoritmos comparados |
+| `columnas` | object[] | variables, tipo y valor de imputación |
+| `importancias` | object[] | peso de cada variable |
+| `reglas` | object[] | reglas `SI … ENTONCES …` (árboles) |
+| `artefacto` | object | modelo serializado para predecir |
+| `createdAt` / `updatedAt` | date | timestamps |
+
 ## Relaciones
 
 | Relación | Cardinalidad | Cómo se implementa |
 | --- | --- | --- |
 | `users` → `encuestas` | 1 : N | `encuestas.creador` referencia a `users._id` |
+| `users` → `modelos` | 1 : N | `modelos.creador` referencia a `users._id` |
 | `surveytypes` → `encuestas` | N : M | `encuestas.tipos[]` referencia a `surveytypes._id` |
 | `encuestas` → `votos` | 1 : N | `votos.encuestaId` referencia a `encuestas._id` |
+| `encuestas` → `modelos` | 1 : N | `modelos.encuestaId` referencia a `encuestas._id` |
 | `encuestas` → `preguntas` | 1 : N | **embebidas** en `encuestas.preguntas[]` |
 | `votos` → `respuestas` | 1 : N | **embebidas** en `votos.respuestas[]` |

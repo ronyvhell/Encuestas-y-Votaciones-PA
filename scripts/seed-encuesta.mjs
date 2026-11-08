@@ -54,7 +54,8 @@ const PREGUNTAS_DEF = [
   { clave: "equipo", tipo: "seleccion_unica", texto: "¿Cómo describes el ambiente de tu equipo? (1 = malo, 5 = excelente)", opciones: ESCALA },
   { clave: "salario", tipo: "seleccion_unica", texto: "¿Qué tan satisfecho estás con tu salario? (1 = nada, 5 = totalmente)", opciones: ESCALA },
   { clave: "recomendaria", tipo: "verdadero_falso", texto: "Recomendarías esta empresa como lugar para trabajar", opciones: [] },
-  { clave: "sigue", tipo: "seleccion_unica", texto: "¿Piensas seguir en la empresa el próximo año?", opciones: ["Sí", "No", "No sé"] },
+  // Variable objetivo BINARIA: solo dos resultados posibles (Sí / No).
+  { clave: "sigue", tipo: "seleccion_unica", texto: "¿Piensas seguir en la empresa el próximo año?", opciones: ["Sí", "No"] },
 ]
 
 // Generador pseudoaleatorio reproducible (mulberry32).
@@ -71,7 +72,6 @@ function crearAzar(semilla) {
 const azar = crearAzar(SEMILLA)
 
 const clamp = (x, min, max) => Math.min(max, Math.max(min, x))
-const elegir = (lista) => lista[Math.floor(azar() * lista.length)]
 
 function ponderado(opciones, pesos) {
   const total = pesos.reduce((a, b) => a + b, 0)
@@ -117,8 +117,9 @@ function generarRespondiente() {
 
   const bonoAntiguedad = antiguedad === "Más de 5 años" ? 0.4 : antiguedad === "Menos de 1 año" ? -0.3 : 0
   const s = puntaje + bonoAntiguedad + normal() * 0.6
-  let sigue = s > 0.6 ? "Sí" : s < -0.6 ? "No" : "No sé"
-  if (azar() < 0.08) sigue = elegir(["Sí", "No", "No sé"]) // ruido realista
+  // Objetivo binario: el colaborador se queda (Sí) o no se queda (No).
+  let sigue = s > 0 ? "Sí" : "No"
+  if (azar() < 0.08) sigue = sigue === "Sí" ? "No" : "Sí" // ruido realista
 
   const recomendaria = puntaje + normal() * 0.7 > 0
 
@@ -197,7 +198,7 @@ function mostrarResumen(respondientes) {
     return pct(grupo.filter((r) => r.sigue === "Sí").length, grupo.length)
   }
   console.log(`\nEncuesta "${TITULO}" con ${respondientes.length} votos.`)
-  for (const op of ["Sí", "No", "No sé"]) {
+  for (const op of ["Sí", "No"]) {
     console.log(`  ¿Seguir? ${op}: ${respondientes.filter((r) => r.sigue === op).length}`)
   }
   console.log(`  % que sí seguirá con comunicación 4-5: ${siSeguira((r) => +r.comunicacion >= 4)}%`)

@@ -186,19 +186,22 @@ export function SurveyRender({
   valores,
   onChange,
   resultados,
+  sinEncabezado = false,
 }: {
   encuesta: EncuestaUI
   mode?: "preview" | "vote" | "results"
   valores?: RespuestasUI
   onChange?: (preguntaId: string, valor: RespuestasUI[string]) => void
   resultados?: ResultadoUI[]
+  /** Oculta portada, título, descripción y tipos (útil en el simulador del modelo). */
+  sinEncabezado?: boolean
 }) {
   const soloLectura = mode === "results"
   const interactivo = mode !== "results"
 
   return (
     <div className="flex flex-col gap-6">
-      {encuesta.imagenPortada && (
+      {!sinEncabezado && encuesta.imagenPortada && (
         <CoverImage
           src={encuesta.imagenPortada}
           alt={encuesta.titulo}
@@ -206,7 +209,7 @@ export function SurveyRender({
         />
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className={sinEncabezado ? "hidden" : "flex flex-col gap-2"}>
         <h2 className="font-heading text-2xl font-semibold tracking-tight">
           {encuesta.titulo || "Encuesta sin título"}
         </h2>

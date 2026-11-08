@@ -1,7 +1,7 @@
 [
   {
     "_id": {
-      "$oid": "6acd12fc680ba85ccc212b66"
+      "$oid": "6af0b5a0eb89cf4d7cce0ac2"
     },
     "titulo": "Clima y comunicación laboral",
     "descripcion": "Encuesta de clima laboral. Datos simulados para dashboard y minería de datos.",
@@ -14,7 +14,7 @@
     "preguntas": [
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b5b"
+          "$oid": "6af0b5a0eb89cf4d7cce0ab7"
         },
         "texto": "¿En qué área trabajas?",
         "tipoPregunta": "seleccion_unica",
@@ -35,7 +35,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b5c"
+          "$oid": "6af0b5a0eb89cf4d7cce0ab8"
         },
         "texto": "¿Cuánto tiempo llevas en la empresa?",
         "tipoPregunta": "seleccion_unica",
@@ -55,7 +55,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b5d"
+          "$oid": "6af0b5a0eb89cf4d7cce0ab9"
         },
         "texto": "¿En qué rango de edad estás?",
         "tipoPregunta": "seleccion_unica",
@@ -75,7 +75,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b5e"
+          "$oid": "6af0b5a0eb89cf4d7cce0aba"
         },
         "texto": "¿Cuál es tu modalidad de trabajo?",
         "tipoPregunta": "seleccion_unica",
@@ -94,7 +94,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b5f"
+          "$oid": "6af0b5a0eb89cf4d7cce0abb"
         },
         "texto": "¿Qué tan clara es la comunicación con tu jefe? (1 = nada clara, 5 = muy clara)",
         "tipoPregunta": "seleccion_unica",
@@ -115,7 +115,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b60"
+          "$oid": "6af0b5a0eb89cf4d7cce0abc"
         },
         "texto": "¿Sientes que tu trabajo es reconocido? (1 = nunca, 5 = siempre)",
         "tipoPregunta": "seleccion_unica",
@@ -136,7 +136,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b61"
+          "$oid": "6af0b5a0eb89cf4d7cce0abd"
         },
         "texto": "¿Qué tan sostenible es tu carga laboral? (1 = insostenible, 5 = muy sostenible)",
         "tipoPregunta": "seleccion_unica",
@@ -157,7 +157,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b62"
+          "$oid": "6af0b5a0eb89cf4d7cce0abe"
         },
         "texto": "¿Cómo describes el ambiente de tu equipo? (1 = malo, 5 = excelente)",
         "tipoPregunta": "seleccion_unica",
@@ -178,7 +178,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b63"
+          "$oid": "6af0b5a0eb89cf4d7cce0abf"
         },
         "texto": "¿Qué tan satisfecho estás con tu salario? (1 = nada, 5 = totalmente)",
         "tipoPregunta": "seleccion_unica",
@@ -199,7 +199,7 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b64"
+          "$oid": "6af0b5a0eb89cf4d7cce0ac0"
         },
         "texto": "Recomendarías esta empresa como lugar para trabajar",
         "tipoPregunta": "verdadero_falso",
@@ -214,14 +214,13 @@
       },
       {
         "_id": {
-          "$oid": "6acd12fc680ba85ccc212b65"
+          "$oid": "6af0b5a0eb89cf4d7cce0ac1"
         },
         "texto": "¿Piensas seguir en la empresa el próximo año?",
         "tipoPregunta": "seleccion_unica",
         "opciones": [
           "Sí",
-          "No",
-          "No sé"
+          "No"
         ],
         "config": {
           "min": null,
